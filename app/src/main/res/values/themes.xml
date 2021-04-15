@@ -6,7 +6,17 @@
         <!-- Secondary brand color. -->
         <!-- Status bar color. -->
         <item name="android:windowFullscreen">true</item>
-        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="Theme.MusicPlayer.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.MusicPlayer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.MusicPlayer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

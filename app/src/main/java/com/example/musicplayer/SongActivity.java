@@ -52,25 +52,13 @@ public class SongActivity extends AppCompatActivity implements Runnable{
         startTiming = findViewById(R.id.startTiming);
         startTiming.setText("0:00");
         endTiming = findViewById(R.id.endTiming);
-        endTiming.setText(createTime(App.getPlayer().getDuration()));
+        endTiming.setText(createTime(App.getCurrentDuration()));
         visualizer = findViewById(R.id.bar);
 
-        int audioSessionId = App.getPlayer().getAudioSessionId();
+        int audioSessionId = App.getPlayerId();
         if (audioSessionId != -1) {
             visualizer.setAudioSessionId(audioSessionId);
         }
-
-        final Handler timeHandler = new Handler();
-        final int delay = 1000;
-
-//        timeHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                String currentTime = createTime(player.getCurrentPosition());
-//                startTiming.setText(currentTime);
-//                timeHandler.postDelayed(this, delay);
-//            }
-//        }, delay);
 
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
@@ -198,7 +186,7 @@ public class SongActivity extends AppCompatActivity implements Runnable{
                 App.getPlayer().seekTo(seekBar.getProgress());
             }
         });
-        seekBar.setMax(App.getPlayer().getDuration());
+        seekBar.setMax(App.getCurrentDuration());
         seekBarThread.start();
         seekBar.getProgressDrawable().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.MULTIPLY);
         seekBar.getThumb().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.SRC_IN);

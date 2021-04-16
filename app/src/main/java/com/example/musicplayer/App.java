@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.media.MediaPlayer;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +16,13 @@ public class App extends Application {
     private static int currentSong = 0;
     private static boolean isAnotherSong;
     private static Intent playerService;
+    private static int currentDuration;
+    private static int playerId;
     private static int mediaPlayerCurrentPosition = 0;
     private static boolean wasSongSwitched;
     private final static List<Track> trackList = new ArrayList<>();
     private static MediaPlayer player;
+    private static String source = ".";
 
     private App() {}
 
@@ -26,6 +31,27 @@ public class App extends Application {
             uniqueInstance = new App();
         }
         return uniqueInstance;
+    }
+
+    public static void setSource(String source) {
+        App.source = source;
+    }
+
+    public static String getSource() {
+        if (source.equals("")) return null;
+        return source;
+    }
+
+    public static void createEmptyPlayer() {
+        player = new MediaPlayer();
+    }
+
+    public static int getCurrentDuration() {
+        return currentDuration;
+    }
+
+    public static void setCurrentDuration(int currentDuration) {
+        App.currentDuration = currentDuration;
     }
 
     public static void addTrack(Track track) {
@@ -57,6 +83,14 @@ public class App extends Application {
     public static String getCurrentTitle() {
         if (trackList.isEmpty()) return "";
         return getCurrentTrack().getTitle();
+    }
+
+    public static int getPlayerId() {
+        return playerId;
+    }
+
+    public static void setPlayerId(int playerId) {
+        App.playerId = playerId;
     }
 
     public static boolean isPlaying() {

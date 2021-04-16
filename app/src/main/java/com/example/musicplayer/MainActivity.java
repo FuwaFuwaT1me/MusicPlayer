@@ -22,6 +22,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -46,6 +48,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     private void addDrawerItems() {
-        String[] osArray = { "Android", "iOS", "Windows", "OS X", "Linux" };
+        String[] osArray = { "Радио", "Плейлисты" };
         //mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
         mAdapter = new ArrayAdapter<String>(this, R.layout.left_menu_textview, osArray);
         mDrawerList.setAdapter(mAdapter);
@@ -189,13 +192,11 @@ public class MainActivity extends AppCompatActivity implements Playable {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        Toast.makeText(MainActivity.this, "0", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(MainActivity.this, RadioActivity.class);
+                        startActivity(intent);
                         break;
                     case 1:
                         Toast.makeText(MainActivity.this, "1", Toast.LENGTH_SHORT).show();
-                        break;
-                    case 2:
-                        Toast.makeText(MainActivity.this, "2", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }

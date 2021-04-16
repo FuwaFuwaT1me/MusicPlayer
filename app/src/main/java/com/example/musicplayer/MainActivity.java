@@ -2,13 +2,8 @@ package com.example.musicplayer;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -22,13 +17,10 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,12 +35,8 @@ import android.widget.Toast;
 
 import com.example.musicplayer.Services.BackgroundMusicService;
 import com.example.musicplayer.Services.OnClearFromRecentService;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     private ArrayAdapter<String> mAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private String mActivityTitle;
+    Intent intentNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 createChannel();
                 registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
-                startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
+                intentNotification = new Intent(getBaseContext(), OnClearFromRecentService.class);
+                startService(intentNotification);
             }
 
             play.setOnClickListener(new View.OnClickListener() {
@@ -168,7 +158,9 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 @Override
                 public void onClick(View v) {
                     if (App.getCurrentPath().equals("")) return;
+                    if (App.isPlaying()) App.setMediaPlayerCurrentPosition(App.getPlayer().getCurrentPosition());
                     Intent intent = new Intent(MainActivity.this, SongActivity.class);
+                    //stopService(intentNotification);
                     startActivity(intent);
                 }
             });
@@ -300,6 +292,11 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && arePermissionsDenied()) {
             requestPermissions(PERMISSIONS, REQUEST_PERMISSIONS);
             return;
+        }
+        if (App.isPlaying()) {
+            play.setBackgroundResource(R.drawable.ic_pause);
+        } else {
+            play.setBackgroundResource(R.drawable.ic_play);
         }
         if (!isMusicPlayerInit) {
             final ListView listView = findViewById(R.id.listView);

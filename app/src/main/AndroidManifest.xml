@@ -15,7 +15,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayer">
-        <activity android:name=".music.RadioActivity"/>
+        <activity
+            android:name=".music.RadioActivity"
+            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"

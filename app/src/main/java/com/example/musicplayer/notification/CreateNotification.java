@@ -56,19 +56,26 @@ public class CreateNotification {
                 drw_next = R.drawable.ic_next;
             }
 
-            String[] info = App.getCurrentTitle().replace("_", " ").split("-");
-            String title = "";
-            StringBuilder text = new StringBuilder();
-            title = info[0];
-            if (info.length >= 2) {
-                for (int i = 1; i < info.length; i++) text.append(info[i]);
+            String title, text = "";
+
+            if (App.getSource().equals(".")) {
+                String[] info = App.getCurrentTitle().replace("_", " ").split("-");
+                title = info[0];
+                if (info.length >= 2) {
+                    for (int i = 1; i < info.length; i++) text += info[i];
+                }
+                if (text.indexOf(" ") == 0) text = text.substring(1);
             }
-            if (text.indexOf(" ") == 0) text = new StringBuilder(text.substring(1));
+            else {
+                title = "Radio";
+                String temp = App.getCurrentRadioTrack().getTitle();
+                text = temp.substring(0, temp.lastIndexOf(" "));
+            }
 
             notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.drawable.songimage)
                     .setContentTitle(title)
-                    .setContentText(text.toString())
+                    .setContentText(text)
                     .setOnlyAlertOnce(true)
                     .setShowWhen(false)
                     .setPriority(NotificationCompat.PRIORITY_LOW)

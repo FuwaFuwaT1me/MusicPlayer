@@ -13,15 +13,6 @@
         android:layout_height="wrap_content"
         android:background="@drawable/list_bg">
 
-        <!--
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:srcCompat="@drawable/songimage"
-            />
-        -->
-
         <TextView
             android:id="@+id/songName"
             android:layout_marginStart="5dp"

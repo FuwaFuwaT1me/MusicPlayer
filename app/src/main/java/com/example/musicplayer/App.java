@@ -13,7 +13,7 @@ public class App extends Application {
     private static App uniqueInstance;
 
     private static boolean isPlaying;
-    private static int currentSong = 0;
+    private static int currentSong = -1;
     private static boolean isAnotherSong;
     private static Intent playerService;
     private static int currentDuration;
@@ -21,9 +21,10 @@ public class App extends Application {
     private static int mediaPlayerCurrentPosition = 0;
     private static boolean wasSongSwitched;
     private final static List<Track> trackList = new ArrayList<>();
-    private final static List<Track> radioList = new ArrayList<Track>();
+    private final static List<Track> radioList = new ArrayList<>();
     private static MediaPlayer player;
     private static String source = ".";
+    private static int currentRadio = -1;
 
     private App() {}
 
@@ -37,6 +38,18 @@ public class App extends Application {
             uniqueInstance = new App();
         }
         return uniqueInstance;
+    }
+
+    public static Track getCurrentRadioTrack() {
+        return radioList.get(currentRadio);
+    }
+
+    public static void setCurrentRadio(int index) {
+        currentRadio = index;
+    }
+
+    public static int getCurrentRadio() {
+        return currentRadio;
     }
 
     public static void addRadio(Track track) {

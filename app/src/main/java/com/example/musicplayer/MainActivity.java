@@ -115,12 +115,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     if (App.getCurrentPath().equals("")) return;
                     App.setIsAnotherSong(false);
                     if (App.isPlaying()) {
-                        //stopService(MainActivity.service);
-                        //play.setBackgroundResource(R.drawable.ic_play);
                         onTrackPause();
                     } else {
-                        //startService(MainActivity.service);
-                        //play.setBackgroundResource(R.drawable.ic_pause);
                         onTrackPlay();
                     }
                 }
@@ -130,12 +126,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 public void onClick(View v) {
                     if (App.getCurrentPath().equals("")) return;
                     if (App.getCurrentSong() - 1 >= 0) {
-//                        wasSongSwitched = true;
-//                        playablePath = trackList.get(--currentSong).getPath();
-//                        songName.setText(playablePath.substring(playablePath.lastIndexOf('/')+1));
-//                        stopService(service);
-//                        isAnotherSong = true;
-//                        startService(service);
                         onTrackPrevious();
                     }
                 }
@@ -145,12 +135,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 public void onClick(View v) {
                     if (App.getCurrentPath().equals("")) return;
                     if (App.getCurrentSong() + 1 < App.getTrackListSize()) {
-//                        wasSongSwitched = true;
-//                        playablePath = trackList.get(++currentSong).getPath();
-//                        songName.setText(playablePath.substring(playablePath.lastIndexOf('/')+1));
-//                        stopService(service);
-//                        isAnotherSong = true;
-//                        startService(service);
                         onTrackNext();
                     }
                 }
@@ -158,10 +142,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
             songName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (!App.getSource().equals(".")) return;
                     if (App.getCurrentPath().equals("")) return;
                     if (App.isPlaying()) App.setMediaPlayerCurrentPosition(App.getPlayer().getCurrentPosition());
                     Intent intent = new Intent(MainActivity.this, SongActivity.class);
-                    //stopService(intentNotification);
                     startActivity(intent);
                 }
             });
@@ -175,8 +159,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     private void addDrawerItems() {
-        String[] osArray = { "Радио", "Плейлисты" };
-        //mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
+        String[] osArray = { "Radio", "Playlists" };
         mAdapter = new ArrayAdapter<String>(this, R.layout.left_menu_textview, osArray);
         mDrawerList.setAdapter(mAdapter);
 
@@ -294,6 +277,9 @@ public class MainActivity extends AppCompatActivity implements Playable {
             requestPermissions(PERMISSIONS, REQUEST_PERMISSIONS);
             return;
         }
+        if (!App.getSource().equals(".")) {
+            songName.setText(App.getCurrentRadioTrack().getTitle());
+        }
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
@@ -309,11 +295,12 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     play.setBackgroundResource(R.drawable.ic_pause);
                     App.setCurrentSong(position);
                     songName.setText(App.getCurrentTitle());
+                    App.setSource(".");
                     startService(App.getPlayerService());
                     //creating notification
-                    CreateNotification.createNotification(MainActivity.this,
+                    CreateNotification.createNotification(getApplicationContext(),
                             App.getCurrentTrack(),
-                            R.drawable.ic_pause, 1, App.getTrackListSize()-1);
+                            R.drawable.ic_pause, App.getCurrentSong(), App.getTrackListSize()-1);
                 }
             });
             fillMusicList();
@@ -359,62 +346,114 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackPrevious() {
-        App.setWasSongSwitched(true);
-        App.setCurrentSong(App.getCurrentSong()-1);
-        stopService(App.getPlayerService());
-        App.setIsAnotherSong(true);
-        startService(App.getPlayerService());
+        if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
+            App.setWasSongSwitched(true);
+            App.setCurrentSong(App.getCurrentSong()+1);
+            stopService(App.getPlayerService());
+            App.setIsAnotherSong(true);
+            songName.setText(App.getCurrentTitle());
+            startService(App.getPlayerService());
 
-        CreateNotification.createNotification(MainActivity.this,
-                App.getCurrentTrack(),
-                R.drawable.ic_pause,
-                App.getCurrentSong(),
-                App.getTrackListSize()-1);
-        songName.setText(App.getCurrentTitle());
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentSong(),
+                    App.getTrackListSize()-1);
+        }
+        else if (App.getCurrentRadio() - 1 >= 0) {
+            stopService(App.getPlayerService());
+            App.setCurrentRadio(App.getCurrentRadio()-1);
+            App.setSource(App.getCurrentRadioTrack().getPath());
+            App.setIsAnotherSong(true);
+            App.setWasSongSwitched(true);
+            songName.setText(App.getCurrentRadioTrack().getTitle());
+            startService(App.getPlayerService());
+
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentRadioTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentRadio(),
+                    App.getRadioListSize()-1);
+        }
     }
 
     @Override
     public void onTrackPlay() {
-        CreateNotification.createNotification(MainActivity.this,
-                App.getCurrentTrack(),
-                R.drawable.ic_pause,
-                App.getCurrentSong(),
-                App.getTrackListSize()-1);
+        if (App.getSource().equals(".")) {
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentSong(),
+                    App.getTrackListSize()-1);
+        }
+        else {
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentRadioTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentRadio(),
+                    App.getRadioListSize() - 1);
+        }
+
         App.setIsPlaying(true);
         App.setIsAnotherSong(false);
-        startService(App.getPlayerService());
         play.setBackgroundResource(R.drawable.ic_pause);
-        songName.setText(App.getCurrentTitle());
+        startService(App.getPlayerService());
     }
 
     @Override
     public void onTrackPause() {
-        CreateNotification.createNotification(MainActivity.this,
-                App.getCurrentTrack(),
-                R.drawable.ic_play,
-                App.getCurrentSong(),
-                App.getTrackListSize()-1);
+        if (App.getSource().equals(".")) {
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentTrack(),
+                    R.drawable.ic_play,
+                    App.getCurrentSong(),
+                    App.getTrackListSize()-1);
+        }
+        else {
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentRadioTrack(),
+                    R.drawable.ic_play,
+                    App.getCurrentRadio(),
+                    App.getRadioListSize() - 1);
+        }
+
         App.setIsPlaying(false);
         App.setIsAnotherSong(false);
-        stopService(App.getPlayerService());
         play.setBackgroundResource(R.drawable.ic_play);
-        songName.setText(App.getCurrentTitle());
+        stopService(App.getPlayerService());
     }
 
     @Override
     public void onTrackNext() {
-        App.setWasSongSwitched(true);
-        App.setCurrentSong(App.getCurrentSong()+1);
-        stopService(App.getPlayerService());
-        App.setIsAnotherSong(true);
-        startService(App.getPlayerService());
+        if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
+            App.setWasSongSwitched(true);
+            App.setCurrentSong(App.getCurrentSong()+1);
+            stopService(App.getPlayerService());
+            App.setIsAnotherSong(true);
+            songName.setText(App.getCurrentTitle());
+            startService(App.getPlayerService());
 
-        CreateNotification.createNotification(MainActivity.this,
-                App.getCurrentTrack(),
-                R.drawable.ic_pause,
-                App.getCurrentSong(),
-                App.getTrackListSize()-1);
-        songName.setText(App.getCurrentTitle());
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentSong(),
+                    App.getTrackListSize()-1);
+        }
+        else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
+            stopService(App.getPlayerService());
+            App.setCurrentRadio(App.getCurrentRadio() + 1);
+            App.setSource(App.getCurrentRadioTrack().getPath());
+            App.setIsAnotherSong(true);
+            App.setWasSongSwitched(true);
+            songName.setText(App.getCurrentRadioTrack().getTitle());
+            startService(App.getPlayerService());
+
+            CreateNotification.createNotification(getApplicationContext(),
+                    App.getCurrentRadioTrack(),
+                    R.drawable.ic_pause,
+                    App.getCurrentRadio(),
+                    App.getRadioListSize() - 1);
+        }
     }
 
     @Override

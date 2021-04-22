@@ -109,17 +109,17 @@ public class App extends Application {
     }
 
     public static Track getCurrentTrack() {
-        if (trackList.isEmpty()) return null;
+        if (currentSong == -1) return null;
         return trackList.get(currentSong);
     }
 
     public static String getCurrentPath() {
-        if (trackList.isEmpty()) return "";
+        if (currentSong == -1) return "";
         return getCurrentTrack().getPath();
     }
 
     public static String getCurrentTitle() {
-        if (trackList.isEmpty()) return "";
+        if (currentSong == -1) return "";
         return getCurrentTrack().getTitle();
     }
 

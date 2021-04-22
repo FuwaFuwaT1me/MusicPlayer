@@ -1,5 +1,6 @@
 package com.example.musicplayer.music;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
@@ -31,13 +33,14 @@ import com.gauravk.audiovisualizer.visualizer.BarVisualizer;
 //import static com.example.musicplayer.Services.BackgroundMusicService.player;
 
 public class SongActivity extends AppCompatActivity implements Runnable, Playable {
-    Button back, refresh, prev, play, next, repeat, fastForward, fastBack;
+    Button back, shuffle, prev, play, next, repeat, fastForward, fastBack;
     TextView songNameView, startTiming, endTiming;
     SeekBar seekBar;
     Thread seekBarThread = new Thread(this);
     BarVisualizer visualizer;
     boolean running = true;
     NotificationManager notificationManager;
+    boolean isRepeated = false;
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -51,8 +54,6 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song);
-
-        //Toast.makeText(this, ""+App.isPlaying(), Toast.LENGTH_SHORT).show();
 
         play = findViewById(R.id.play2);
         prev = findViewById(R.id.previous2);
@@ -69,6 +70,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         endTiming = findViewById(R.id.endTiming);
         endTiming.setText(createTime(App.getCurrentDuration()));
         visualizer = findViewById(R.id.bar);
+        repeat = findViewById(R.id.repeat);
+        shuffle = findViewById(R.id.shuffle);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
@@ -87,12 +90,22 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             play.setBackgroundResource(R.drawable.ic_play);
         }
 
-        App.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                next.performClick();
-            }
-        });
+        if (!isRepeated) {
+            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                @Override
+                public void onSeekComplete(MediaPlayer mp) {
+                    next.performClick();
+                }
+            });
+        }
+        else {
+            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                @Override
+                public void onSeekComplete(MediaPlayer mp) {
+                    //do nothing
+                }
+            });
+        }
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,43 +152,59 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     play.setBackgroundResource(R.drawable.ic_pause);
                     startService(App.getPlayerService());
                 }
+
+                if (!isRepeated) {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            next.performClick();
+                        }
+                    });
+                }
+                else {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            //do nothing
+                        }
+                    });
+                }
             }
         });
 
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getCurrentSong() - 1 >= 0) {
-                    if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
-                        App.setWasSongSwitched(true);
-                        App.setCurrentSong(App.getCurrentSong()+1);
-                        stopService(App.getPlayerService());
-                        App.setIsAnotherSong(true);
-                        songNameView.setText(App.getCurrentTitle());
-                        startService(App.getPlayerService());
+                if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
+                    App.setWasSongSwitched(true);
+                    App.setCurrentSong(App.getCurrentSong()+1);
+                    stopService(App.getPlayerService());
+                    App.setIsAnotherSong(true);
+                    songNameView.setText(App.getCurrentTitle());
+                    startService(App.getPlayerService());
 
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentTrack(),
-                                R.drawable.ic_play,
-                                App.getCurrentSong(),
-                                App.getTrackListSize()-1);
-                    }
-                    else if (App.getCurrentRadio() - 1 >= 0) {
-                        stopService(App.getPlayerService());
-                        App.setCurrentRadio(App.getCurrentRadio()-1);
-                        App.setSource(App.getCurrentRadioTrack().getPath());
-                        App.setIsAnotherSong(true);
-                        App.setWasSongSwitched(true);
-                        songNameView.setText(App.getCurrentRadioTrack().getTitle());
-                        startService(App.getPlayerService());
+                    CreateNotification.createNotification(getApplicationContext(),
+                            App.getCurrentTrack(),
+                            R.drawable.ic_play,
+                            App.getCurrentSong(),
+                            App.getTrackListSize()-1);
+                }
+                else if (App.getCurrentRadio() - 1 >= 0) {
+                    stopService(App.getPlayerService());
+                    App.setCurrentRadio(App.getCurrentRadio()-1);
+                    App.setSource(App.getCurrentRadioTrack().getPath());
+                    App.setIsAnotherSong(true);
+                    App.setWasSongSwitched(true);
+                    songNameView.setText(App.getCurrentRadioTrack().getTitle());
+                    startService(App.getPlayerService());
 
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentRadioTrack(),
-                                R.drawable.ic_pause,
-                                App.getCurrentRadio(),
-                                App.getRadioListSize()-1);
-                    }
-                } else {
+                    CreateNotification.createNotification(getApplicationContext(),
+                            App.getCurrentRadioTrack(),
+                            R.drawable.ic_pause,
+                            App.getCurrentRadio(),
+                            App.getRadioListSize()-1);
+                }
+                else {
                     if (!App.isPlaying()) {
                         startService(App.getPlayerService());
                         App.setIsAnotherSong(true);
@@ -184,47 +213,81 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                         App.getPlayer().seekTo(0);
                     }
                 }
+
+                if (!isRepeated) {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            next.performClick();
+                        }
+                    });
+                }
+                else {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            //do nothing
+                        }
+                    });
+                }
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getCurrentSong()+ 1 < App.getTrackListSize()) {
-                    if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
-                        App.setWasSongSwitched(true);
-                        App.setCurrentSong(App.getCurrentSong()-1);
-                        stopService(App.getPlayerService());
-                        App.setIsAnotherSong(true);
-                        songNameView.setText(App.getCurrentTitle());
-                        startService(App.getPlayerService());
+                Toast.makeText(SongActivity.this, "clicked", Toast.LENGTH_SHORT).show();
+                if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
+                    App.setWasSongSwitched(true);
+                    App.setCurrentSong(App.getCurrentSong()-1);
+                    stopService(App.getPlayerService());
+                    App.setIsAnotherSong(true);
+                    songNameView.setText(App.getCurrentTitle());
+                    startService(App.getPlayerService());
 
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentTrack(),
-                                R.drawable.ic_play,
-                                App.getCurrentSong(),
-                                App.getTrackListSize()-1);
-                    }
-                    else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
-                        stopService(App.getPlayerService());
-                        App.setCurrentRadio(App.getCurrentRadio() + 1);
-                        App.setSource(App.getCurrentRadioTrack().getPath());
-                        App.setIsAnotherSong(true);
-                        App.setWasSongSwitched(true);
-                        songNameView.setText(App.getCurrentRadioTrack().getTitle());
-                        startService(App.getPlayerService());
+                    CreateNotification.createNotification(getApplicationContext(),
+                            App.getCurrentTrack(),
+                            R.drawable.ic_play,
+                            App.getCurrentSong(),
+                            App.getTrackListSize()-1);
+                }
+                else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
+                    stopService(App.getPlayerService());
+                    App.setCurrentRadio(App.getCurrentRadio() + 1);
+                    App.setSource(App.getCurrentRadioTrack().getPath());
+                    App.setIsAnotherSong(true);
+                    App.setWasSongSwitched(true);
+                    songNameView.setText(App.getCurrentRadioTrack().getTitle());
+                    startService(App.getPlayerService());
 
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentRadioTrack(),
-                                R.drawable.ic_pause,
-                                App.getCurrentRadio(),
-                                App.getRadioListSize() - 1);
-                    }
-                } else {
+                    CreateNotification.createNotification(getApplicationContext(),
+                            App.getCurrentRadioTrack(),
+                            R.drawable.ic_pause,
+                            App.getCurrentRadio(),
+                            App.getRadioListSize() - 1);
+                }
+                else {
                     App.getPlayer().seekTo(App.getPlayer().getDuration());
                     seekBar.setProgress(App.getPlayer().getDuration());
                     startTiming.setText(createTime(App.getPlayer().getDuration()));
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getPlayerService());
+                }
+
+                if (!isRepeated) {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            next.performClick();
+                        }
+                    });
+                }
+                else {
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            //do nothing
+                        }
+                    });
                 }
             }
         });
@@ -247,8 +310,6 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(SongActivity.this, MainActivity.class);
-//                startActivity(intent);
                 finish();
             }
         });
@@ -263,12 +324,37 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-//                if (player != null && player.isPlaying()) {
-//                    player.seekTo(seekBar.getProgress());
-//                }
                 App.getPlayer().seekTo(seekBar.getProgress());
             }
         });
+        repeat.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseCompatLoadingForColorStateLists")
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View v) {
+                if (!isRepeated) {
+                    isRepeated = true;
+                    repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            //do nothing
+                        }
+                    });
+                }
+                else {
+                    isRepeated = false;
+                    repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
+                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                        @Override
+                        public void onSeekComplete(MediaPlayer mp) {
+                            next.performClick();
+                        }
+                    });
+                }
+            }
+        });
+
         seekBar.setMax(App.getCurrentDuration());
         seekBar.setProgress(App.getMediaPlayerCurrentPosition());
         seekBarThread.start();
@@ -300,25 +386,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     int total = App.getPlayer().getDuration();
                     int current = App.getPlayer().getCurrentPosition();
                     startTiming.setText(createTime(current));
+                    endTiming.setText(createTime(total));
                     seekBar.setMax(total);
                     seekBar.setProgress(current);
                 }
             } catch (Exception e) {
             }
         }
-
-//        int total = player.getDuration();
-//        int current = 0;
-//
-//        while (current < total) {
-//            try {
-//                Thread.sleep(500);
-//                current = player.getCurrentPosition();
-//                seekBar.setProgress(current);
-//            } catch (InterruptedException | IllegalStateException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     @Override
@@ -329,14 +403,6 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         super.onDestroy();
         running = false;
     }
-
-//    public void startAnimation(View view) {
-//        ObjectAnimator animator = ObjectAnimator.ofFloat(imageView, "rotation", 0f, 360f);
-//        animator.setDuration(1000);
-//        AnimatorSet animatorSet = new AnimatorSet();
-//        animatorSet.playTogether(animator);
-//        animatorSet.start();
-//    }
 
     public String createTime(int duration) {
         String time = "";
@@ -352,16 +418,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //Toast.makeText(context, ""+App.isPlaying(), Toast.LENGTH_SHORT).show();
             String action = intent.getExtras().getString("actionName");
-
 
             switch (action) {
                 case CreateNotification.ACTION_PREVIOUS:
                     onTrackPrevious();
                     break;
                 case CreateNotification.ACTION_PLAY:
-                    //Toast.makeText(context, ""+App.isPlaying(), Toast.LENGTH_SHORT).show();
                     if (!App.isPlaying()) onTrackPause();
                     else onTrackPlay();
                     break;

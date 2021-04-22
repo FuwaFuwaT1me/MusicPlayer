@@ -125,23 +125,39 @@
                 android:id="@+id/fastForward"
                 android:background="@drawable/ic_forward_rewind"
                 android:layout_marginTop="20dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="10dp"
                 android:layout_toRightOf="@id/next2"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginStart="15dp"
                 android:layout_toEndOf="@id/next2" />
+
+            <Button
+                android:id="@+id/repeat"
+                android:background="@drawable/ic_repeat"
+                android:layout_marginTop="25dp"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/fastForward"
+                android:layout_width="35dp"
+                android:layout_height="35dp"/>
 
             <Button
                 android:id="@+id/fastBack"
                 android:background="@drawable/ic_back_rewind"
                 android:layout_marginTop="20dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginRight="10dp"
                 android:layout_toLeftOf="@id/previous2"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginEnd="15dp"
                 android:layout_toStartOf="@id/previous2" />
+
+            <Button
+                android:id="@+id/shuffle"
+                android:background="@drawable/ic_shuffle"
+                android:layout_marginTop="25dp"
+                android:layout_marginRight="10dp"
+                android:layout_toLeftOf="@id/fastBack"
+                android:layout_width="35dp"
+                android:layout_height="35dp" />
 
             <com.gauravk.audiovisualizer.visualizer.BarVisualizer
                 xmlns:custom="http://schemas.android.com/apk/res-auto"

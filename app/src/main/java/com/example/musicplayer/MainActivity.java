@@ -20,13 +20,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -35,10 +32,14 @@ import android.widget.Toast;
 
 import com.example.musicplayer.Services.BackgroundMusicService;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.adapter.TrackAdapter;
+import com.example.musicplayer.music.RadioActivity;
+import com.example.musicplayer.music.SongActivity;
+import com.example.musicplayer.music.Track;
+import com.example.musicplayer.notification.CreateNotification;
+import com.example.musicplayer.notification.Playable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Playable {
     private static final String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 @Override
                 public void onClick(View v) {
                     if (App.getCurrentPath().equals("")) return;
-                    if (App.getCurrentSong() + 1 < App.getSize()) {
+                    if (App.getCurrentSong() + 1 < App.getTrackListSize()) {
 //                        wasSongSwitched = true;
 //                        playablePath = trackList.get(++currentSong).getPath();
 //                        songName.setText(playablePath.substring(playablePath.lastIndexOf('/')+1));
@@ -312,13 +313,13 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     //creating notification
                     CreateNotification.createNotification(MainActivity.this,
                             App.getCurrentTrack(),
-                            R.drawable.ic_pause, 1, App.getSize()-1);
+                            R.drawable.ic_pause, 1, App.getTrackListSize()-1);
                 }
             });
             fillMusicList();
-            final TextAdapter textAdapter = new TextAdapter();
-            textAdapter.setData(App.getTrackList());
-            listView.setAdapter(textAdapter);
+            final TrackAdapter trackAdapter = new TrackAdapter();
+            trackAdapter.setData(App.getTrackList());
+            listView.setAdapter(trackAdapter);
 
             isMusicPlayerInit = true;
         }
@@ -333,60 +334,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
             }
-        }
-    }
-
-    private void populateTracks() {
-
-    }
-
-    class TextAdapter extends BaseAdapter {
-        private List<Track> data = new ArrayList<>();
-
-        void setData(List<Track> mData) {
-            data.clear();
-            data.addAll(mData);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public int getCount() {
-            return data.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(parent.getContext()).
-                        inflate(R.layout.list_item, parent, false);
-                holder = new ViewHolder(convertView);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.info.setText(data.get(position).getTitle());
-            holder.info.setSelected(true);
-
-            return convertView;
-        }
-    }
-
-    class ViewHolder {
-        TextView info;
-
-        ViewHolder(View view) {
-            this.info = (TextView) view.findViewById(R.id.txtSongName);
         }
     }
 
@@ -422,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         songName.setText(App.getCurrentTitle());
     }
 
@@ -432,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         App.setIsPlaying(true);
         App.setIsAnotherSong(false);
         startService(App.getPlayerService());
@@ -446,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 App.getCurrentTrack(),
                 R.drawable.ic_play,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         App.setIsPlaying(false);
         App.setIsAnotherSong(false);
         stopService(App.getPlayerService());
@@ -466,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         songName.setText(App.getCurrentTitle());
     }
 

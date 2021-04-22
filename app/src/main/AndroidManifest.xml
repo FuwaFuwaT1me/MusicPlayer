@@ -8,13 +8,14 @@
 
     <application
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayer">
-        <activity android:name=".RadioActivity"/>
+        <activity android:name=".music.RadioActivity"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
@@ -26,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SongActivity"
+            android:name=".music.SongActivity"
             android:label="song"
             android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
 

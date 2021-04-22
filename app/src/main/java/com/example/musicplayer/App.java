@@ -4,8 +4,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.media.MediaPlayer;
 
-import java.io.IOException;
-import java.net.URL;
+import com.example.musicplayer.music.Track;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +21,7 @@ public class App extends Application {
     private static int mediaPlayerCurrentPosition = 0;
     private static boolean wasSongSwitched;
     private final static List<Track> trackList = new ArrayList<>();
+    private final static List<Track> radioList = new ArrayList<Track>();
     private static MediaPlayer player;
     private static String source = ".";
 
@@ -28,9 +29,34 @@ public class App extends Application {
 
     public static App getInstance() {
         if (uniqueInstance == null) {
+            radioList.add(new Track("Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
+            radioList.add(new Track("Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
+            radioList.add(new Track("Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
+            radioList.add(new Track("Rock radio", "http://galnet.ru:8000/hard"));
+            radioList.add(new Track("Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
             uniqueInstance = new App();
         }
         return uniqueInstance;
+    }
+
+    public static void addRadio(Track track) {
+        radioList.add(track);
+    }
+
+    public static void removeRadio(int index) {
+        radioList.remove(index);
+    }
+
+    public static Track getRadio(int index) {
+        return radioList.get(index);
+    }
+
+    public static List<Track> getRadioList() {
+        return radioList;
+    }
+
+    public static int getRadioListSize() {
+        return radioList.size();
     }
 
     public static void setSource(String source) {
@@ -38,7 +64,6 @@ public class App extends Application {
     }
 
     public static String getSource() {
-        if (source.equals("")) return null;
         return source;
     }
 
@@ -58,15 +83,15 @@ public class App extends Application {
         trackList.add(track);
     }
 
-    public static void removeTrack(Track track) {
-        trackList.remove(track);
+    public static void removeTrack(int index) {
+        trackList.remove(index);
     }
 
     public static void clearTrackList() {
         trackList.clear();
     }
 
-    public static int getSize() {
+    public static int getTrackListSize() {
         return trackList.size();
     }
 
@@ -133,7 +158,7 @@ public class App extends Application {
         App.mediaPlayerCurrentPosition = mediaPlayerCurrentPosition;
     }
 
-    public static boolean isWasSongSwitched() {
+    public static boolean wasSongSwitched() {
         return wasSongSwitched;
     }
 

@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.notification;
 
 public interface Playable {
     void onTrackPrevious();

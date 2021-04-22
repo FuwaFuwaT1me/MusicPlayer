@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.notification;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -10,7 +10,10 @@ import android.support.v4.media.session.MediaSessionCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.example.musicplayer.App;
+import com.example.musicplayer.R;
 import com.example.musicplayer.Services.NotificationActionService;
+import com.example.musicplayer.music.Track;
 
 public class CreateNotification {
     public static final String CHANNEL_ID = "channel1";

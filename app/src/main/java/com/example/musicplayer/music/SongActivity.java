@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.music;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -22,7 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.musicplayer.App;
+import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.notification.CreateNotification;
+import com.example.musicplayer.notification.Playable;
 import com.gauravk.audiovisualizer.visualizer.BarVisualizer;
 
 //import static com.example.musicplayer.Services.BackgroundMusicService.player;
@@ -139,7 +142,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getCurrentSong()+ 1 < App.getSize()) {
+                if (App.getCurrentSong()+ 1 < App.getTrackListSize()) {
                     App.setCurrentSong(App.getCurrentSong()+1);
                     songNameView.setText(App.getCurrentTitle());
                     stopService(App.getPlayerService());
@@ -317,7 +320,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         songNameView.setText(App.getCurrentTitle());
     }
 
@@ -327,7 +330,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         App.setIsPlaying(true);
         App.setIsAnotherSong(false);
         startService(App.getPlayerService());
@@ -341,7 +344,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                 App.getCurrentTrack(),
                 R.drawable.ic_play,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         App.setIsPlaying(false);
         App.setIsAnotherSong(false);
         stopService(App.getPlayerService());
@@ -362,7 +365,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                 App.getCurrentTrack(),
                 R.drawable.ic_pause,
                 App.getCurrentSong(),
-                App.getSize()-1);
+                App.getTrackListSize()-1);
         songNameView.setText(App.getCurrentTitle());
     }
 }

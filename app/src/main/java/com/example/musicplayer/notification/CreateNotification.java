@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.NotificationActionService;
 import com.example.musicplayer.music.Track;
@@ -20,6 +21,7 @@ public class CreateNotification {
     public static final String ACTION_PREVIOUS = "action_previous";
     public static final String ACTION_PLAY = "action_play";
     public static final String ACTION_NEXT = "action_next";
+    public static final String ACTION_BACK = "action_back";
 
     public static Notification notification;
 
@@ -43,6 +45,9 @@ public class CreateNotification {
             Intent intentPlay = new Intent(context, NotificationActionService.class)
                     .setAction(ACTION_PLAY);
             PendingIntent pendingIntentPlay = PendingIntent.getBroadcast(context, 0, intentPlay, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Intent intentBack = new Intent(context, MainActivity.class);
+            PendingIntent pendingIntentBack = PendingIntent.getBroadcast(context, 0, intentBack, PendingIntent.FLAG_UPDATE_CURRENT);
 
             PendingIntent pendingIntentNext;
             int drw_next;
@@ -81,6 +86,7 @@ public class CreateNotification {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setAutoCancel(false)
                     .setOngoing(true)
+                    .setContentIntent(pendingIntentBack)
                     .addAction(drw_previous, "Previous", pendingIntentPrevious)
                     .addAction(playButton, "Play", pendingIntentPlay)
                     .addAction(drw_next, "Next", pendingIntentNext)

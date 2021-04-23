@@ -25,6 +25,9 @@ public class App extends Application {
     private static MediaPlayer player;
     private static String source = ".";
     private static int currentRadio = -1;
+    private static List<Track> queue = new ArrayList<>();
+    private static boolean isRepeated = false;
+    private static boolean isShuffled = false;
 
     private App() {}
 
@@ -38,6 +41,30 @@ public class App extends Application {
             uniqueInstance = new App();
         }
         return uniqueInstance;
+    }
+
+    public static void setIsRepeated(boolean temp) {
+        isRepeated = temp;
+    }
+
+    public static boolean isRepeated() {
+        return isRepeated;
+    }
+
+    public static void setIsShuffled(boolean temp) {
+        isShuffled = temp;
+    }
+
+    public static boolean isShuffled() {
+        return isShuffled;
+    }
+
+    public static void addToQueue(Track track) {
+        queue.add(track);
+    }
+
+    public static void clearQueue() {
+        queue.clear();
     }
 
     public static Track getCurrentRadioTrack() {
@@ -58,10 +85,6 @@ public class App extends Application {
 
     public static void removeRadio(int index) {
         radioList.remove(index);
-    }
-
-    public static Track getRadio(int index) {
-        return radioList.get(index);
     }
 
     public static List<Track> getRadioList() {
@@ -104,13 +127,25 @@ public class App extends Application {
         trackList.clear();
     }
 
-    public static int getTrackListSize() {
-        return trackList.size();
+    public static int getQueueSize() {
+        return queue.size();
     }
 
     public static Track getCurrentTrack() {
         if (currentSong == -1) return null;
-        return trackList.get(currentSong);
+        return queue.get(currentSong);
+    }
+
+    public static int getTrackListSize() {
+        return trackList.size();
+    }
+
+    public static Track getTrackFromQueue(int index) {
+        return queue.get(index);
+    }
+
+    public static Track getTrack(int index) {
+        return trackList.get(index);
     }
 
     public static String getCurrentPath() {

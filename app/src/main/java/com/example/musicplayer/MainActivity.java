@@ -46,19 +46,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
     private static final int REQUEST_PERMISSIONS = 12345;
     private static final int PERMISSIONS_COUNT = 2;
     private boolean isMusicPlayerInit = false;
-    //public static int currentSong = 0;
     private final int REQUEST_CODE_PERMISSION_WRITE_STORAGE = 1;
-    //public static String playablePath = "";
     Button prev, play, next;
-    //public static Intent service;
-    //public static int mediaPlayerCurrentPosition;
     TextView songName;
-    ImageView imageView;
-    //public static boolean isAnotherSong = false;
-    //public static boolean isPlaying = false;
-    //public static boolean wasSongSwitched = false;
     NotificationManager notificationManager;
-    //public static List<Track> trackList = new ArrayList<>();
     private ListView mDrawerList;
     private DrawerLayout mDrawerLayout;
     private ArrayAdapter<String> mAdapter;
@@ -78,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
         addDrawerItems();
         setupDrawer();
 
-        if( getSupportActionBar() !=null ) {
+        if( getSupportActionBar() != null ) {
             getSupportActionBar().setTitle("EarFeeder");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
@@ -134,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 @Override
                 public void onClick(View v) {
                     if (App.getCurrentPath().equals("")) return;
-                    if (App.getCurrentSong() + 1 < App.getTrackListSize()) {
+                    if (App.getCurrentSong() + 1 < App.getQueueSize()) {
                         onTrackNext();
                     }
                 }
@@ -220,13 +211,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
     @SuppressLint("NewApi")
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (arePermissionsDenied()) {
-//            ((ActivityManager) (this.getSystemService(ACTIVITY_SERVICE))).clearApplicationUserData();
-//            recreate();
-//        } else {
-//            onResume();
-//        }
          switch (requestCode) {
              case REQUEST_CODE_PERMISSION_WRITE_STORAGE:
                  if (grantResults.length > 0
@@ -249,6 +233,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
             final String path = file.getAbsolutePath();
             if (path.endsWith(".mp3") || path.endsWith(".wav")) {
                 App.addTrack(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
+                        path));
+                App.addToQueue(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
                         path));
             }
         }
@@ -273,11 +259,16 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (!App.getSource().equals(".")) {
             songName.setText(App.getCurrentRadioTrack().getTitle());
         }
+        else {
+            songName.setText(App.getCurrentTitle());
+        }
+
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
             play.setBackgroundResource(R.drawable.ic_play);
         }
+
         if (!isMusicPlayerInit) {
             final ListView listView = findViewById(R.id.listView);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -293,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     //creating notification
                     CreateNotification.createNotification(getApplicationContext(),
                             App.getCurrentTrack(),
-                            R.drawable.ic_pause, App.getCurrentSong(), App.getTrackListSize()-1);
+                            R.drawable.ic_pause, App.getCurrentSong(), App.getQueueSize()-1);
                 }
             });
             fillMusicList();
@@ -341,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     public void onTrackPrevious() {
         if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
             App.setWasSongSwitched(true);
-            App.setCurrentSong(App.getCurrentSong()+1);
+            App.setCurrentSong(App.getCurrentSong()-1);
             stopService(App.getPlayerService());
             App.setIsAnotherSong(true);
             songName.setText(App.getCurrentTitle());
@@ -351,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     App.getCurrentTrack(),
                     R.drawable.ic_pause,
                     App.getCurrentSong(),
-                    App.getTrackListSize()-1);
+                    App.getQueueSize()-1);
         }
         else if (App.getCurrentRadio() - 1 >= 0) {
             stopService(App.getPlayerService());
@@ -377,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     App.getCurrentTrack(),
                     R.drawable.ic_pause,
                     App.getCurrentSong(),
-                    App.getTrackListSize()-1);
+                    App.getQueueSize()-1);
         }
         else {
             CreateNotification.createNotification(getApplicationContext(),
@@ -400,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     App.getCurrentTrack(),
                     R.drawable.ic_play,
                     App.getCurrentSong(),
-                    App.getTrackListSize()-1);
+                    App.getQueueSize()-1);
         }
         else {
             CreateNotification.createNotification(getApplicationContext(),
@@ -418,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackNext() {
-        if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
+        if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getQueueSize()) {
             App.setWasSongSwitched(true);
             App.setCurrentSong(App.getCurrentSong()+1);
             stopService(App.getPlayerService());
@@ -430,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     App.getCurrentTrack(),
                     R.drawable.ic_pause,
                     App.getCurrentSong(),
-                    App.getTrackListSize()-1);
+                    App.getQueueSize()-1);
         }
         else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
             stopService(App.getPlayerService());

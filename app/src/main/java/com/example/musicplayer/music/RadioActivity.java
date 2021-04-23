@@ -8,13 +8,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -26,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
-import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
@@ -35,8 +32,6 @@ import com.example.musicplayer.notification.Playable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RadioActivity extends AppCompatActivity implements Playable {
     Button setRadioButton, backButton;
@@ -150,7 +145,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                                 App.getCurrentTrack(),
                                 R.drawable.ic_play,
                                 App.getCurrentSong(),
-                                App.getTrackListSize()-1);
+                                App.getQueueSize()-1);
                     }
                     else {
                         CreateNotification.createNotification(getApplicationContext(),
@@ -170,7 +165,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                                 App.getCurrentTrack(),
                                 R.drawable.ic_pause,
                                 App.getCurrentSong(),
-                                App.getTrackListSize()-1);
+                                App.getQueueSize()-1);
                     }
                     else {
                         CreateNotification.createNotification(getApplicationContext(),
@@ -202,7 +197,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                             App.getCurrentTrack(),
                             R.drawable.ic_play,
                             App.getCurrentSong(),
-                            App.getTrackListSize()-1);
+                            App.getQueueSize()-1);
                 }
                 else if (App.getCurrentRadio() - 1 >= 0) {
                     stopService(App.getPlayerService());
@@ -224,7 +219,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
+                if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getQueueSize()) {
                     App.setWasSongSwitched(true);
                     App.setCurrentSong(App.getCurrentSong()-1);
                     stopService(App.getPlayerService());
@@ -236,7 +231,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                             App.getCurrentTrack(),
                             R.drawable.ic_play,
                             App.getCurrentSong(),
-                            App.getTrackListSize()-1);
+                            App.getQueueSize()-1);
                 }
                 else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
                     stopService(App.getPlayerService());

@@ -30,6 +30,10 @@ import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 import com.gauravk.audiovisualizer.visualizer.BarVisualizer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 //import static com.example.musicplayer.Services.BackgroundMusicService.player;
 
 public class SongActivity extends AppCompatActivity implements Runnable, Playable {
@@ -40,7 +44,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     BarVisualizer visualizer;
     boolean running = true;
     NotificationManager notificationManager;
-    boolean isRepeated = false;
+    boolean isPrev = false;
+    boolean needSwitch = true;
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -50,6 +55,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("UseCompatLoadingForColorStateLists")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,26 +96,24 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             play.setBackgroundResource(R.drawable.ic_play);
         }
 
-        if (!isRepeated) {
-            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                @Override
-                public void onSeekComplete(MediaPlayer mp) {
-                    next.performClick();
-                }
-            });
+        if (!App.isRepeated()) {
+            repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
         }
         else {
-            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                @Override
-                public void onSeekComplete(MediaPlayer mp) {
-                    //do nothing
-                }
-            });
+            repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+        }
+
+        if (!App.isShuffled()) {
+            shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
+        }
+        else {
+            shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
         }
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isPrev = false;
                 App.setIsAnotherSong(false);
                 if (App.isPlaying()) {
                     if (App.getSource().equals(".")) {
@@ -117,7 +121,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                                 App.getCurrentTrack(),
                                 R.drawable.ic_play,
                                 App.getCurrentSong(),
-                                App.getTrackListSize()-1);
+                                App.getQueueSize()-1);
                     }
                     else {
                         CreateNotification.createNotification(getApplicationContext(),
@@ -137,7 +141,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                                 App.getCurrentTrack(),
                                 R.drawable.ic_pause,
                                 App.getCurrentSong(),
-                                App.getTrackListSize()-1);
+                                App.getQueueSize()-1);
                     }
                     else {
                         CreateNotification.createNotification(getApplicationContext(),
@@ -152,42 +156,35 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     play.setBackgroundResource(R.drawable.ic_pause);
                     startService(App.getPlayerService());
                 }
-
-                if (!isRepeated) {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            next.performClick();
-                        }
-                    });
-                }
-                else {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            //do nothing
-                        }
-                    });
-                }
             }
         });
 
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
-                    App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()+1);
-                    stopService(App.getPlayerService());
-                    App.setIsAnotherSong(true);
-                    songNameView.setText(App.getCurrentTitle());
-                    startService(App.getPlayerService());
-
+                isPrev = true;
+                if (App.getSource().equals(".")) {
+                    if (App.getCurrentSong() - 1 >= 0) {
+                        App.setWasSongSwitched(true);
+                        App.setCurrentSong(App.getCurrentSong() - 1);
+                        stopService(App.getPlayerService());
+                        App.setIsAnotherSong(true);
+                        songNameView.setText(App.getCurrentTitle());
+                        play.setBackgroundResource(R.drawable.ic_pause);
+                        startService(App.getPlayerService());
+                    }
+                    else {
+                        if (!App.isPlaying()) {
+                            startService(App.getPlayerService());
+                            play.setBackgroundResource(R.drawable.ic_pause);
+                        }
+                        App.getPlayer().seekTo(0);
+                    }
                     CreateNotification.createNotification(getApplicationContext(),
                             App.getCurrentTrack(),
-                            R.drawable.ic_play,
+                            R.drawable.ic_pause,
                             App.getCurrentSong(),
-                            App.getTrackListSize()-1);
+                            App.getQueueSize() - 1);
                 }
                 else if (App.getCurrentRadio() - 1 >= 0) {
                     stopService(App.getPlayerService());
@@ -204,51 +201,35 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                             App.getCurrentRadio(),
                             App.getRadioListSize()-1);
                 }
-                else {
-                    if (!App.isPlaying()) {
-                        startService(App.getPlayerService());
-                        App.setIsAnotherSong(true);
-                        play.setBackgroundResource(R.drawable.ic_pause);
-                    } else {
-                        App.getPlayer().seekTo(0);
-                    }
-                }
-
-                if (!isRepeated) {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            next.performClick();
-                        }
-                    });
-                }
-                else {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            //do nothing
-                        }
-                    });
-                }
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(SongActivity.this, "clicked", Toast.LENGTH_SHORT).show();
-                if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getTrackListSize()) {
-                    App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()-1);
-                    stopService(App.getPlayerService());
-                    App.setIsAnotherSong(true);
-                    songNameView.setText(App.getCurrentTitle());
-                    startService(App.getPlayerService());
+                isPrev = false;
+                if (App.getSource().equals(".")) {
+                    if (App.getCurrentSong() + 1 < App.getQueueSize()) {
+                        App.setWasSongSwitched(true);
+                        App.setCurrentSong(App.getCurrentSong() + 1);
+                        stopService(App.getPlayerService());
+                        App.setIsAnotherSong(true);
+                        songNameView.setText(App.getCurrentTitle());
+                        play.setBackgroundResource(R.drawable.ic_pause);
+                        startService(App.getPlayerService());
+                    }
+                    else {
+                        App.getPlayer().seekTo(App.getPlayer().getDuration());
+                        seekBar.setProgress(App.getPlayer().getDuration());
+                        startTiming.setText(createTime(App.getPlayer().getDuration()));
+                        play.setBackgroundResource(R.drawable.ic_play);
+                        stopService(App.getPlayerService());
+                    }
 
                     CreateNotification.createNotification(getApplicationContext(),
                             App.getCurrentTrack(),
                             R.drawable.ic_play,
                             App.getCurrentSong(),
-                            App.getTrackListSize()-1);
+                            App.getQueueSize()-1);
                 }
                 else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
                     stopService(App.getPlayerService());
@@ -265,36 +246,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                             App.getCurrentRadio(),
                             App.getRadioListSize() - 1);
                 }
-                else {
-                    App.getPlayer().seekTo(App.getPlayer().getDuration());
-                    seekBar.setProgress(App.getPlayer().getDuration());
-                    startTiming.setText(createTime(App.getPlayer().getDuration()));
-                    play.setBackgroundResource(R.drawable.ic_play);
-                    stopService(App.getPlayerService());
-                }
-
-                if (!isRepeated) {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            next.performClick();
-                        }
-                    });
-                }
-                else {
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            //do nothing
-                        }
-                    });
-                }
             }
         });
         fastForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (App.isPlaying()) {
+                    App.setIsAnotherSong(false);
                     App.getPlayer().seekTo(App.getPlayer().getCurrentPosition()+10000);
                 }
             }
@@ -303,6 +261,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onClick(View v) {
                 if (App.isPlaying()) {
+                    App.setIsAnotherSong(false);
                     App.getPlayer().seekTo(App.getPlayer().getCurrentPosition()-10000);
                 }
             }
@@ -316,6 +275,10 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (seekBar.getMax() <= progress + 1000 && !App.isRepeated() && needSwitch) {
+                    next.performClick();
+                    needSwitch = false;
+                }
             }
 
             @Override
@@ -324,33 +287,37 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                App.setIsAnotherSong(false);
                 App.getPlayer().seekTo(seekBar.getProgress());
             }
         });
         repeat.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("UseCompatLoadingForColorStateLists")
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
-                if (!isRepeated) {
-                    isRepeated = true;
+                if (!App.isRepeated()) {
+                    App.setIsRepeated(true);
                     repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            //do nothing
-                        }
-                    });
                 }
                 else {
-                    isRepeated = false;
+                    App.setIsRepeated(false);
                     repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
-                    App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                        @Override
-                        public void onSeekComplete(MediaPlayer mp) {
-                            next.performClick();
-                        }
-                    });
+                }
+            }
+        });
+        shuffle.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseCompatLoadingForColorStateLists")
+            @Override
+            public void onClick(View v) {
+                if (!App.isRepeated()) {
+                    App.setIsShuffled(true);
+                    shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+                    shuffleQueue();
+                }
+                else {
+                    App.setIsShuffled(false);
+                    shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
+                    returnQueueToNormal();
                 }
             }
         });
@@ -360,6 +327,39 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         seekBarThread.start();
         seekBar.getProgressDrawable().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.MULTIPLY);
         seekBar.getThumb().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.SRC_IN);
+    }
+
+    private void returnQueueToNormal() {
+        App.clearQueue();
+        for (int i = 0; i < App.getTrackListSize(); i++) {
+            App.addToQueue(App.getTrack(i));
+        }
+    }
+
+    private void shuffleQueue() {
+        List<Track> temp = new ArrayList<>();
+        Track currTrack = App.getCurrentTrack();
+        int currIndex = App.getCurrentSong();
+        for (int i = 0; i < App.getQueueSize(); i++) {
+            temp.add(App.getTrackFromQueue(i));
+        }
+        App.clearQueue();
+        Random rnd = new Random();
+
+        for (int i = 0; i < temp.size(); i++) {
+            if (i == currIndex) {
+                App.addToQueue(currTrack);
+                temp.remove(currTrack);
+                continue;
+            }
+            int index = rnd.nextInt(temp.size());
+            while (index == currIndex) index = rnd.nextInt(temp.size());
+
+            App.addToQueue(
+                    temp.get(index)
+            );
+            temp.remove(index);
+        }
     }
 
     private void createChannel() {
@@ -382,6 +382,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     if (audioSessionId != -1) {
                         visualizer.setAudioSessionId(audioSessionId);
                     }
+                    if (App.wasSongSwitched()) needSwitch = true;
                     Thread.sleep(1000);
                     int total = App.getPlayer().getDuration();
                     int current = App.getPlayer().getCurrentPosition();
@@ -456,4 +457,25 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         songNameView.setText(App.getCurrentTrack().getTitle());
         play.setBackgroundResource(R.drawable.ic_pause);
     }
+
+//    private void setRepeat() {
+//        if (!isRepeated) {
+//            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+//                @Override
+//                public void onSeekComplete(MediaPlayer mp) {
+//                    if (!isPrev && App.isAnotherSong()) {
+//                        next.performClick();
+//                    }
+//                }
+//            });
+//        }
+//        else {
+//            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+//                @Override
+//                public void onSeekComplete(MediaPlayer mp) {
+//                    //do nothing
+//                }
+//            });
+//        }
+//    }
 }

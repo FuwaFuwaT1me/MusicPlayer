@@ -34,7 +34,7 @@ public class BackgroundMusicService extends Service {
 
         if (App.getSource().equals(".")) {
             isFromSource = false;
-            App.setPlayer(MediaPlayer.create(this, Uri.parse(App.getCurrentPath())));
+            App.setPlayer(MediaPlayer.create(getApplicationContext(), Uri.parse(App.getCurrentPath())));
             App.getPlayer().setLooping(true);
         }
         else {
@@ -83,6 +83,7 @@ public class BackgroundMusicService extends Service {
         App.setCurrentDuration(App.getPlayer().getDuration());
         App.getPlayer().stop();
         App.getPlayer().release();
+        App.setPlayer(null);
     }
 
     @Nullable

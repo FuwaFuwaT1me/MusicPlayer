@@ -114,6 +114,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onClick(View v) {
                 isPrev = false;
+                setRepeat();
                 App.setIsAnotherSong(false);
                 if (App.isPlaying()) {
                     if (App.getSource().equals(".")) {
@@ -163,6 +164,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onClick(View v) {
                 isPrev = true;
+                setRepeat();
                 if (App.getSource().equals(".")) {
                     if (App.getCurrentSong() - 1 >= 0) {
                         App.setWasSongSwitched(true);
@@ -207,6 +209,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onClick(View v) {
                 isPrev = false;
+                setRepeat();
                 if (App.getSource().equals(".")) {
                     if (App.getCurrentSong() + 1 < App.getQueueSize()) {
                         App.setWasSongSwitched(true);
@@ -275,10 +278,11 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (seekBar.getMax() <= progress + 1000 && !App.isRepeated() && needSwitch) {
-                    next.performClick();
-                    needSwitch = false;
-                }
+                //костыль
+                //if (seekBar.getMax() <= progress + 1000 && !App.isRepeated() && needSwitch) {
+                //    next.performClick();
+                //    needSwitch = false;
+                //}
             }
 
             @Override
@@ -458,24 +462,22 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         play.setBackgroundResource(R.drawable.ic_pause);
     }
 
-//    private void setRepeat() {
-//        if (!isRepeated) {
-//            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-//                @Override
-//                public void onSeekComplete(MediaPlayer mp) {
-//                    if (!isPrev && App.isAnotherSong()) {
-//                        next.performClick();
-//                    }
-//                }
-//            });
-//        }
-//        else {
-//            App.getPlayer().setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-//                @Override
-//                public void onSeekComplete(MediaPlayer mp) {
-//                    //do nothing
-//                }
-//            });
-//        }
-//    }
+    private void setRepeat() {
+        if (!App.isRepeated()) {
+            App.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    next.performClick();
+                }
+            });
+        }
+        else {
+            App.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    //do nothing
+                }
+            });
+        }
+    }
 }

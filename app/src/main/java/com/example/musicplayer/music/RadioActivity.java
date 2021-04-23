@@ -56,6 +56,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         title = findViewById(R.id.songName);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        title.setSelected(true);
 
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
@@ -187,7 +188,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             public void onClick(View v) {
                 if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
                     App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()+1);
+                    App.setCurrentSong(App.getCurrentSong()-1);
                     stopService(App.getPlayerService());
                     App.setIsAnotherSong(true);
                     title.setText(App.getCurrentTitle());
@@ -221,7 +222,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             public void onClick(View v) {
                 if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getQueueSize()) {
                     App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()-1);
+                    App.setCurrentSong(App.getCurrentSong()+1);
                     stopService(App.getPlayerService());
                     App.setIsAnotherSong(true);
                     title.setText(App.getCurrentTitle());

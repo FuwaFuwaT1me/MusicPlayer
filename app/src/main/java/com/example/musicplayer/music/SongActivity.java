@@ -307,6 +307,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     App.setIsRepeated(false);
                     repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
                 }
+                setRepeat();
             }
         });
         shuffle.setOnClickListener(new View.OnClickListener() {

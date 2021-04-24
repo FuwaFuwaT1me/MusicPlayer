@@ -314,7 +314,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @SuppressLint("UseCompatLoadingForColorStateLists")
             @Override
             public void onClick(View v) {
-                if (!App.isRepeated()) {
+                if (!App.isShuffled()) {
                     App.setIsShuffled(true);
                     shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
                     shuffleQueue();

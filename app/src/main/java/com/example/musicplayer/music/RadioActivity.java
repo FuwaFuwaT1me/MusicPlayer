@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,22 +43,19 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     Button play, prev, next;
     TextView title;
     NotificationManager notificationManager;
+    boolean running = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_radio);
 
-        setRadioButton = findViewById(R.id.setRadioButton);
-        radioUrl = findViewById(R.id.radioUrl);
-        radioList = findViewById(R.id.radioList);
-        backButton = findViewById(R.id.backButton);
-        radioTitle = findViewById(R.id.radioTitle);
-        play = findViewById(R.id.play);
-        title = findViewById(R.id.songName);
-        prev = findViewById(R.id.previous);
-        next = findViewById(R.id.next);
-        title.setSelected(true);
+        if (!running) {
+            running = true;
+            startTitleThread();
+        }
+
+        init();
 
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
@@ -67,7 +66,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         if (!App.getSource().equals(".") && App.getCurrentRadio() != -1) {
             title.setText(App.getCurrentRadioTrack().getTitle());
         }
-        else if (App.getCurrentSong() != -1) {
+        else if (App.getSource().equals(".") && App.getCurrentSong() != -1) {
             title.setText(App.getCurrentTitle());
         }
 
@@ -76,6 +75,19 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
             startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
         }
+    }
+
+    void init() {
+        setRadioButton = findViewById(R.id.setRadioButton);
+        radioUrl = findViewById(R.id.radioUrl);
+        radioList = findViewById(R.id.radioList);
+        backButton = findViewById(R.id.backButton);
+        radioTitle = findViewById(R.id.radioTitle);
+        play = findViewById(R.id.play);
+        title = findViewById(R.id.songName);
+        prev = findViewById(R.id.previous);
+        next = findViewById(R.id.next);
+        title.setSelected(true);
 
         adapter = new TrackAdapter();
         adapter.setData(App.getRadioList());
@@ -96,7 +108,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     App.setCurrentRadio(App.getRadioListSize() - 1);
                     adapter.setData(App.getRadioList());
                     adapter.notifyDataSetChanged();
-                    title.setText(App.getCurrentRadioTrack().getTitle());
+                    updateTitle();
                     App.setIsPlaying(true);
                     App.setIsAnotherSong(true);
                     play.setBackgroundResource(R.drawable.ic_pause);
@@ -123,11 +135,9 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 App.setIsAnotherSong(true);
                 App.setSource(App.getCurrentRadioTrack().getPath());
                 play.setBackgroundResource(R.drawable.ic_pause);
-                title.setText(App.getCurrentRadioTrack().getTitle());
+                updateTitle();
                 startService(App.getPlayerService());
-                CreateNotification.createNotification(RadioActivity.this,
-                        App.getCurrentRadioTrack(),
-                        R.drawable.ic_pause, 1, App.getRadioListSize()-1);
+                createRadioNotification(R.drawable.ic_pause);
             }
         });
         radioList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -142,18 +152,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             public void onClick(View v) {
                 if (App.isPlaying()) {
                     if (App.getSource().equals(".")) {
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentTrack(),
-                                R.drawable.ic_play,
-                                App.getCurrentSong(),
-                                App.getQueueSize()-1);
+                        createTrackNotification(R.drawable.ic_play);
                     }
                     else {
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentRadioTrack(),
-                                R.drawable.ic_play,
-                                App.getCurrentRadio(),
-                                App.getRadioListSize() - 1);
+                        createRadioNotification(R.drawable.ic_play);
                     }
 
                     App.setIsPlaying(false);
@@ -162,18 +164,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     stopService(App.getPlayerService());
                 } else {
                     if (App.getSource().equals(".")) {
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentTrack(),
-                                R.drawable.ic_pause,
-                                App.getCurrentSong(),
-                                App.getQueueSize()-1);
+                        createTrackNotification(R.drawable.ic_pause);
                     }
                     else {
-                        CreateNotification.createNotification(getApplicationContext(),
-                                App.getCurrentRadioTrack(),
-                                R.drawable.ic_pause,
-                                App.getCurrentRadio(),
-                                App.getRadioListSize() - 1);
+                        createRadioNotification(R.drawable.ic_pause);
                     }
 
                     App.setIsPlaying(true);
@@ -187,33 +181,12 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
-                    App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()-1);
-                    stopService(App.getPlayerService());
-                    App.setIsAnotherSong(true);
-                    title.setText(App.getCurrentTitle());
-                    startService(App.getPlayerService());
-
-                    CreateNotification.createNotification(getApplicationContext(),
-                            App.getCurrentTrack(),
-                            R.drawable.ic_play,
-                            App.getCurrentSong(),
-                            App.getQueueSize()-1);
+                    moveTrack(-1);
+                    createTrackNotification(R.drawable.ic_pause);
                 }
                 else if (App.getCurrentRadio() - 1 >= 0) {
-                    stopService(App.getPlayerService());
-                    App.setCurrentRadio(App.getCurrentRadio()-1);
-                    App.setSource(App.getCurrentRadioTrack().getPath());
-                    App.setIsAnotherSong(true);
-                    App.setWasSongSwitched(true);
-                    title.setText(App.getCurrentRadioTrack().getTitle());
-                    startService(App.getPlayerService());
-
-                    CreateNotification.createNotification(getApplicationContext(),
-                            App.getCurrentRadioTrack(),
-                            R.drawable.ic_pause,
-                            App.getCurrentRadio(),
-                            App.getRadioListSize()-1);
+                    moveRadio(-1);
+                    createRadioNotification(R.drawable.ic_pause);
                 }
             }
         });
@@ -221,36 +194,55 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getQueueSize()) {
-                    App.setWasSongSwitched(true);
-                    App.setCurrentSong(App.getCurrentSong()+1);
-                    stopService(App.getPlayerService());
-                    App.setIsAnotherSong(true);
-                    title.setText(App.getCurrentTitle());
-                    startService(App.getPlayerService());
-
-                    CreateNotification.createNotification(getApplicationContext(),
-                            App.getCurrentTrack(),
-                            R.drawable.ic_play,
-                            App.getCurrentSong(),
-                            App.getQueueSize()-1);
+                    moveTrack(1);
+                    createTrackNotification(R.drawable.ic_pause);
                 }
                 else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
-                    stopService(App.getPlayerService());
-                    App.setCurrentRadio(App.getCurrentRadio() + 1);
-                    App.setSource(App.getCurrentRadioTrack().getPath());
-                    App.setIsAnotherSong(true);
-                    App.setWasSongSwitched(true);
-                    title.setText(App.getCurrentRadioTrack().getTitle());
-                    startService(App.getPlayerService());
-
-                    CreateNotification.createNotification(getApplicationContext(),
-                            App.getCurrentRadioTrack(),
-                            R.drawable.ic_pause,
-                            App.getCurrentRadio(),
-                            App.getRadioListSize() - 1);
+                    moveRadio(1);
+                    createRadioNotification(R.drawable.ic_pause);
                 }
             }
         });
+    }
+
+    void moveTrack(int direction) {
+        App.setWasSongSwitched(true);
+        App.setCurrentSong(App.getCurrentSong() + direction);
+        stopService(App.getPlayerService());
+        App.setIsAnotherSong(true);
+        updateTitle();
+        startService(App.getPlayerService());
+    }
+
+    void moveRadio(int direction) {
+        stopService(App.getPlayerService());
+        App.setCurrentRadio(App.getCurrentRadio() + direction);
+        App.setSource(App.getCurrentRadioTrack().getPath());
+        App.setIsAnotherSong(true);
+        App.setWasSongSwitched(true);
+        updateTitle();
+        startService(App.getPlayerService());
+    }
+
+    void updateTitle() {
+        if (App.getSource().equals(".")) title.setText(App.getCurrentTitle());
+        else title.setText(App.getCurrentRadioTrack().getTitle());
+    }
+
+    void createTrackNotification(int index) {
+        CreateNotification.createNotification(getApplicationContext(),
+                App.getCurrentTrack(),
+                index,
+                App.getCurrentSong(),
+                App.getQueueSize()-1);
+    }
+
+    void createRadioNotification(int index) {
+        CreateNotification.createNotification(getApplicationContext(),
+                App.getCurrentRadioTrack(),
+                index,
+                App.getCurrentRadio(),
+                App.getRadioListSize() - 1);
     }
 
     private void createChannel() {
@@ -322,5 +314,34 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     public void onTrackNext() {
         title.setText(App.getCurrentRadioTrack().getTitle());
         play.setBackgroundResource(R.drawable.ic_pause);
+    }
+
+    private void startTitleThread() {
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            public void run() {
+                while (running) {
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    handler.post(new Runnable(){
+                        public void run() {
+                            if (App.getPlayer() == null) return;
+                            updateTitle();
+                        }
+                    });
+                }
+            }
+        };
+        new Thread(runnable).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        running = false;
     }
 }

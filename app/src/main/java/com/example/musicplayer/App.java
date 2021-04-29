@@ -3,7 +3,10 @@ package com.example.musicplayer;
 import android.app.Application;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.example.musicplayer.music.SongActivity;
 import com.example.musicplayer.music.Track;
 
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ public class App extends Application {
     private static MediaPlayer player;
     private static String source = ".";
     private static int currentRadio = -1;
-    private static List<Track> queue = new ArrayList<>();
+    private final static List<Track> queue = new ArrayList<>();
     private static boolean isRepeated = false;
     private static boolean isShuffled = false;
 
@@ -218,7 +221,7 @@ public class App extends Application {
         return trackList;
     }
 
-    public static MediaPlayer getPlayer() {
+    public static synchronized MediaPlayer getPlayer() {
         return player;
     }
 

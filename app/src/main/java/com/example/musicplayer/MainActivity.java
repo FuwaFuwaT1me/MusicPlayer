@@ -35,6 +35,8 @@ import android.widget.Toast;
 import com.example.musicplayer.Services.BackgroundMusicService;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
+import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.MusicTrack;
 import com.example.musicplayer.music.RadioActivity;
 import com.example.musicplayer.music.SongActivity;
 import com.example.musicplayer.music.Track;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     private ActionBarDrawerToggle mDrawerToggle;
     Intent intentNotification;
     boolean running = false;
+    AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
         init();
 
         App.getInstance();
+
         if (!arePermissionsDenied()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 createChannel();
@@ -85,6 +89,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void init() {
+        db = App.getDb();
+        db.musicTrackDao().insert(new MusicTrack(1, "name", "path"));
+        Toast.makeText(this, ""+db.musicTrackDao().getById(1).getName(), Toast.LENGTH_SHORT).show();
+
         mDrawerList = findViewById(R.id.navList);
         mDrawerLayout = findViewById(R.id.drawer_layout);
 

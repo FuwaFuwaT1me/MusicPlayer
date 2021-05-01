@@ -6,6 +6,9 @@ import android.media.MediaPlayer;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.room.Room;
+
+import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.music.SongActivity;
 import com.example.musicplayer.music.Track;
 
@@ -31,19 +34,28 @@ public class App extends Application {
     private final static List<Track> queue = new ArrayList<>();
     private static boolean isRepeated = false;
     private static boolean isShuffled = false;
+    private static AppDatabase db;
 
     private App() {}
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        uniqueInstance = this;
+        db = Room.databaseBuilder(this, AppDatabase.class, "trackDB").build();
+        radioList.add(new Track("Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
+        radioList.add(new Track("Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
+        radioList.add(new Track("Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
+        radioList.add(new Track("Rock radio", "http://galnet.ru:8000/hard"));
+        radioList.add(new Track("Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+    }
+
     public static App getInstance() {
-        if (uniqueInstance == null) {
-            radioList.add(new Track("Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
-            radioList.add(new Track("Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
-            radioList.add(new Track("Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
-            radioList.add(new Track("Rock radio", "http://galnet.ru:8000/hard"));
-            radioList.add(new Track("Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
-            uniqueInstance = new App();
-        }
         return uniqueInstance;
+    }
+
+    public static AppDatabase getDb() {
+        return db;
     }
 
     public static void setIsRepeated(boolean temp) {

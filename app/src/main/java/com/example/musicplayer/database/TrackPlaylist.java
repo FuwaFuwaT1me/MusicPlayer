@@ -1,5 +1,6 @@
 package com.example.musicplayer.database;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
@@ -13,8 +14,10 @@ public class TrackPlaylist {
     @PrimaryKey(autoGenerate = true)
     private long id;
 
+    @ColumnInfo(index = true)
     private int trackId;
 
+    @ColumnInfo(index = true)
     private int playlistId;
 
     public TrackPlaylist(int trackId, int playlistId) {

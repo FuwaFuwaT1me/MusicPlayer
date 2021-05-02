@@ -282,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     if (App.isPlaying()) stopService(App.getPlayerService());
                     App.setIsAnotherSong(true);
                     play.setBackgroundResource(R.drawable.ic_pause);
+                    for (Track track : db.trackDao().getAll()) App.addToQueue(track);
                     App.setCurrentSong(position);
                     updateTitle();
                     App.setSource(".");
@@ -336,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             moveTrack(-1);
             createTrackNotification(R.drawable.ic_pause);
         }
-        else if (App.getCurrentRadio() - 1 >= 0) {
+        else if (!App.getSource().equals(".") && App.getCurrentRadio() - 1 >= 0) {
             moveRadio(-1);
             createRadioNotification(R.drawable.ic_pause);
         }
@@ -378,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             moveTrack(1);
             createTrackNotification(R.drawable.ic_pause);
         }
-        else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
+        else if (!App.getSource().equals(".") && App.getCurrentRadio() +1 < App.getRadioListSize()) {
             moveRadio(1);
             createRadioNotification(R.drawable.ic_pause);
         }
@@ -420,8 +421,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void updateTitle() {
-        if (App.getSource().equals(".")) songName.setText(App.getCurrentTitle());
-        else songName.setText(App.getCurrentRadioTrack().getName());
+        if (App.getSource().equals(".") && !songName.getText().equals(App.getCurrentTitle())) {
+            songName.setText(App.getCurrentTitle());
+        }
+        else if (!App.getSource().equals(".") && !songName.getText().equals(App.getCurrentRadioTrack().getName())) songName.setText(App.getCurrentRadioTrack().getName());
     }
 
     @Override

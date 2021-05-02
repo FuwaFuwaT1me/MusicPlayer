@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
@@ -74,21 +75,21 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 //        db.trackPlaylistDao().insert(new TrackPlaylist(6, 0));
 //        db.trackPlaylistDao().insert(new TrackPlaylist(15, 1));
 
-        List<Track> list = db.trackDao().getAll();
-        for (Track track : list) {
-            Log.d("testing", track.getId() + " " + track.getName() + " " + track.getPath());
-        }
-
-        List<Playlist> list1 = db.playlistDao().getAll();
-        for (Playlist playlist : list1) {
-            Log.d("testing", playlist.getId() + " " + playlist.getName());
-        }
-
-        List<TrackPlaylist> list2 = db.trackPlaylistDao().getAll();
-        for (TrackPlaylist trackPlaylist : list2) {
-            Log.d("testing", trackPlaylist.getTrackId() + " " + trackPlaylist.getPlaylistId());
-        }
-        //LOGS-----------------------
+//        List<Track> list = db.trackDao().getAll();
+//        for (Track track : list) {
+//            Log.d("testing", track.getId() + " " + track.getName() + " " + track.getPath());
+//        }
+//
+//        List<Playlist> list1 = db.playlistDao().getAll();
+//        for (Playlist playlist : list1) {
+//            Log.d("testing", playlist.getId() + " " + playlist.getName());
+//        }
+//
+//        List<TrackPlaylist> list2 = db.trackPlaylistDao().getAll();
+//        for (TrackPlaylist trackPlaylist : list2) {
+//            Log.d("testing", trackPlaylist.getTrackId() + " " + trackPlaylist.getPlaylistId());
+//        }
+//        //LOGS-----------------------
 
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
@@ -192,10 +193,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     }
 
                     App.setIsPlaying(false);
-                    App.setIsAnotherSong(false);
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getPlayerService());
                 } else {
+                    if (App.getPlayer() == null) App.setCurrentSong(0);
                     if (App.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause);
                     }
@@ -204,20 +205,21 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     }
 
                     App.setIsPlaying(true);
-                    App.setIsAnotherSong(false);
                     play.setBackgroundResource(R.drawable.ic_pause);
                     startService(App.getPlayerService());
                 }
+                App.setIsAnotherSong(false);
             }
         });
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (App.getPlayer() == null) return;
                 if (App.getSource().equals(".") && App.getCurrentSong() - 1 >= 0) {
                     moveTrack(-1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
-                else if (App.getCurrentRadio() - 1 >= 0) {
+                else if (!App.getSource().equals(".") && App.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
@@ -226,14 +228,25 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (App.getPlayer() == null) return;
                 if (App.getSource().equals(".") && App.getCurrentSong() + 1 < App.getQueueSize()) {
                     moveTrack(1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
-                else if (App.getCurrentRadio() +1 < App.getRadioListSize()) {
+                else if (!App.getSource().equals(".") && App.getCurrentRadio() +1 < App.getRadioListSize()) {
                     moveRadio(1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+            }
+        });
+        title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!App.getSource().equals(".")) return;
+                if (App.getCurrentPath().equals("")) return;
+                if (App.isPlaying()) App.setMediaPlayerCurrentPosition(App.getPlayer().getCurrentPosition());
+                Intent intent = new Intent(getApplicationContext(), SongActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -258,8 +271,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     }
 
     void updateTitle() {
-        if (App.getSource().equals(".")) title.setText(App.getCurrentTitle());
-        else title.setText(App.getCurrentRadioTrack().getName());
+        if (App.getSource().equals(".") && !title.getText().equals(App.getCurrentTitle())) {
+            title.setText(App.getCurrentTitle());
+        }
+        else if (!App.getSource().equals(".") && !title.getText().equals(App.getCurrentRadioTrack().getName())) title.setText(App.getCurrentRadioTrack().getName());
     }
 
     void createTrackNotification(int index) {

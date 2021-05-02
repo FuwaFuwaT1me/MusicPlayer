@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <RelativeLayout
+        android:id="@+id/playlistLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <Button
+            android:id="@+id/addingBack"
+            android:layout_width="50dp"
+            android:background="@drawable/ic_back"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_alignParentLeft="true"/>
+
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/playlistNameET"
+        android:layout_below="@id/playlistLinearLayout"
+        android:layout_width="match_parent"
+        android:hint="Playlist name"
+        android:paddingLeft="5dp"
+        android:layout_margin="10dp"
+        android:minHeight="30dp"
+        android:maxHeight="30dp"
+        android:background="@drawable/list_bg"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/createPlaylist"
+        android:layout_below="@+id/playlistNameET"
+        android:layout_centerInParent="true"
+        android:background="@drawable/list_bg"
+        android:text="Create playlist"
+        android:textColor="@color/white"
+        android:padding="5dp"
+        android:textStyle="italic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_below="@id/createPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/addingTracks"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10.0sp"
+            android:padding="8dp"
+            android:layout_weight="1">
+        </ListView>
+
+        <fragment class="com.example.musicplayer.BottomFragment"
+            android:id="@+id/bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/bottom_panel_fragment" />
+
+    </LinearLayout>
+
+</RelativeLayout>

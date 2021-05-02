@@ -3,8 +3,8 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <item android:id="@+id/add"
+    <item android:id="@+id/deleteContextMenu"
         android:icon="@android:drawable/ic_menu_add"
-        android:title="Удалить"/>
+        android:title="Delete"/>
 
 </menu>

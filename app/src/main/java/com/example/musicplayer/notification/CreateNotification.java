@@ -14,7 +14,7 @@ import com.example.musicplayer.App;
 import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.NotificationActionService;
-import com.example.musicplayer.music.Track;
+import com.example.musicplayer.database.Track;
 
 public class CreateNotification {
     public static final String CHANNEL_ID = "channel1";
@@ -72,7 +72,7 @@ public class CreateNotification {
             }
             else {
                 title = "Radio";
-                String temp = App.getCurrentRadioTrack().getTitle();
+                String temp = App.getCurrentRadioTrack().getName();
                 text = temp.substring(0, temp.lastIndexOf(" "));
             }
 

@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.musicplayer.App;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.database.Track;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 import com.gauravk.audiovisualizer.visualizer.BarVisualizer;

@@ -1,12 +1,28 @@
 package com.example.musicplayer.database;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class MusicTrack {
+public class Track {
+    @PrimaryKey
+    private int id = -1;
 
-    public MusicTrack(int id, String name, String path) {
+    private String name;
+
+    private String path;
+
+    @Ignore
+    private boolean selected;
+
+    @Ignore
+    public Track(String name, String path) {
+        this.name = name;
+        this.path = path;
+    }
+
+    public Track(int id, String name, String path) {
         this.id = id;
         this.name = name;
         this.path = path;
@@ -36,10 +52,11 @@ public class MusicTrack {
         this.path = path;
     }
 
-    @PrimaryKey
-    private int id;
+    public boolean isSelected() {
+        return selected;
+    }
 
-    private String name;
-
-    private String path;
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
 }

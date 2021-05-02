@@ -17,17 +17,16 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,10 +35,12 @@ import com.example.musicplayer.Services.BackgroundMusicService;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
-import com.example.musicplayer.database.MusicTrack;
+import com.example.musicplayer.database.Playlist;
+import com.example.musicplayer.database.Track;
+import com.example.musicplayer.music.PlaylistActivity;
 import com.example.musicplayer.music.RadioActivity;
 import com.example.musicplayer.music.SongActivity;
-import com.example.musicplayer.music.Track;
+import com.example.musicplayer.database.Track;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     Intent intentNotification;
     boolean running = false;
     AppDatabase db;
+    int fileIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +92,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     void init() {
         db = App.getDb();
-        db.musicTrackDao().insert(new MusicTrack(1, "name", "path"));
-        Toast.makeText(this, ""+db.musicTrackDao().getById(1).getName(), Toast.LENGTH_SHORT).show();
-
         mDrawerList = findViewById(R.id.navList);
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -164,11 +163,12 @@ public class MainActivity extends AppCompatActivity implements Playable {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        Intent intent = new Intent(MainActivity.this, RadioActivity.class);
-                        startActivity(intent);
+                        Intent intentRadio = new Intent(MainActivity.this, RadioActivity.class);
+                        startActivity(intentRadio);
                         break;
                     case 1:
-                        Toast.makeText(MainActivity.this, "1", Toast.LENGTH_SHORT).show();
+                        Intent intentPlaylist = new Intent(MainActivity.this, PlaylistActivity.class);
+                        startActivity(intentPlaylist);
                         break;
                 }
             }
@@ -237,10 +237,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
         for (File file : files) {
             final String path = file.getAbsolutePath();
             if (path.endsWith(".mp3") || path.endsWith(".wav")) {
-                App.addTrack(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
-                        path));
-                App.addToQueue(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
-                        path));
+                db.trackDao().insert(new Track(fileIndex++, file.getName(), path));
+                //App.addTrack(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
+                //        path));
+                App.addToQueue(new Track(file.getName().replace(".mp3", "").replace(".wav", ""), path));
             }
         }
     }
@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     App.setIsAnotherSong(true);
                     play.setBackgroundResource(R.drawable.ic_pause);
                     App.setCurrentSong(position);
-                   updateTitle();
+                    updateTitle();
                     App.setSource(".");
                     startService(App.getPlayerService());
                     createTrackNotification(R.drawable.ic_pause);
@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             });
             fillMusicList();
             final TrackAdapter trackAdapter = new TrackAdapter();
-            trackAdapter.setData(App.getTrackList());
+            trackAdapter.setData(db.trackDao().getAll());
             listView.setAdapter(trackAdapter);
 
             isMusicPlayerInit = true;
@@ -421,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     void updateTitle() {
         if (App.getSource().equals(".")) songName.setText(App.getCurrentTitle());
-        else songName.setText(App.getCurrentRadioTrack().getTitle());
+        else songName.setText(App.getCurrentRadioTrack().getName());
     }
 
     @Override
@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (App.getPlayer() == null) return;
                             if (App.getSource().equals(".")) songName.setText(App.getCurrentTitle());
-                            else songName.setText(App.getCurrentRadioTrack().getTitle());
+                            else songName.setText(App.getCurrentRadioTrack().getName());
                         }
                     });
                 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginStart="8dp"
+    android:id="@+id/myItem">
+
+    <RelativeLayout
+        android:padding="8dp"
+        android:background="@drawable/list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/checkbox"
+            android:buttonTint="@color/av_red"
+            android:layout_width="50dp"
+            android:layout_height="50dp"/>
+
+        <ImageView
+            android:id="@+id/imgSong"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/list_bg"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toRightOf="@id/checkbox"
+            android:src="@drawable/ic_music"
+            android:layout_marginLeft="5dp"/>
+
+        <TextView
+            android:id="@+id/txtSongName"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toEndOf="@+id/imgSong"
+            android:padding="6dp"
+            android:textColor="@color/white"
+            android:text="song name"
+            android:textSize="15sp"
+            android:singleLine="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="marquee"
+            android:scrollHorizontally="true"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/imgSong" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

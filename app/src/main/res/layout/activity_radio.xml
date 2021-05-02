@@ -17,7 +17,10 @@
     <EditText
         android:layout_below="@+id/backButton"
         android:background="@drawable/list_bg"
-        android:hint="Название радио"
+        android:hint="Radio name"
+        android:textColorHint="@color/white"
+        android:minHeight="30dp"
+        android:paddingLeft="5dp"
         android:layout_marginTop="10dp"
         android:id="@+id/radioTitle"
         android:layout_marginLeft="10dp"
@@ -34,11 +37,14 @@
         android:background="@drawable/list_bg"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:paddingLeft="5dp"
         android:id="@+id/radioUrl"
         android:textColor="@color/white"
         android:layout_width="match_parent"
-        android:hint="Ссылка на радио"
+        android:textColorHint="@color/white"
+        android:hint="Radio link"
         android:layout_height="wrap_content"
+        android:minHeight="30dp"
         android:maxHeight="30dp"
         android:singleLine="true"/>
 

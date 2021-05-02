@@ -6,10 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,11 +29,16 @@ import com.example.musicplayer.App;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
+import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.Playlist;
+import com.example.musicplayer.database.Track;
+import com.example.musicplayer.database.TrackPlaylist;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class RadioActivity extends AppCompatActivity implements Playable {
     Button setRadioButton, backButton;
@@ -44,6 +49,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     TextView title;
     NotificationManager notificationManager;
     boolean running = false;
+    AppDatabase db = App.getDb();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,6 +63,33 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
         init();
 
+        //LOGS-------------------------
+//        db.playlistDao().insert(new Playlist(App.getPlaylistIndex(), "playlist_name_1"));
+//        App.incPlaylistIndex();
+//        db.playlistDao().insert(new Playlist(App.getPlaylistIndex(), "playlist_name_2"));
+//        App.incPlaylistIndex();
+
+//        db.trackPlaylistDao().insert(new TrackPlaylist(5, 0));
+//        db.trackPlaylistDao().insert(new TrackPlaylist(10, 1));
+//        db.trackPlaylistDao().insert(new TrackPlaylist(6, 0));
+//        db.trackPlaylistDao().insert(new TrackPlaylist(15, 1));
+
+        List<Track> list = db.trackDao().getAll();
+        for (Track track : list) {
+            Log.d("testing", track.getId() + " " + track.getName() + " " + track.getPath());
+        }
+
+        List<Playlist> list1 = db.playlistDao().getAll();
+        for (Playlist playlist : list1) {
+            Log.d("testing", playlist.getId() + " " + playlist.getName());
+        }
+
+        List<TrackPlaylist> list2 = db.trackPlaylistDao().getAll();
+        for (TrackPlaylist trackPlaylist : list2) {
+            Log.d("testing", trackPlaylist.getTrackId() + " " + trackPlaylist.getPlaylistId());
+        }
+        //LOGS-----------------------
+
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
@@ -64,7 +97,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         }
 
         if (!App.getSource().equals(".") && App.getCurrentRadio() != -1) {
-            title.setText(App.getCurrentRadioTrack().getTitle());
+            title.setText(App.getCurrentRadioTrack().getName());
         }
         else if (App.getSource().equals(".") && App.getCurrentSong() != -1) {
             title.setText(App.getCurrentTitle());
@@ -226,7 +259,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
     void updateTitle() {
         if (App.getSource().equals(".")) title.setText(App.getCurrentTitle());
-        else title.setText(App.getCurrentRadioTrack().getTitle());
+        else title.setText(App.getCurrentRadioTrack().getName());
     }
 
     void createTrackNotification(int index) {
@@ -296,7 +329,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackPrevious() {
-        title.setText(App.getCurrentRadioTrack().getTitle());
+        title.setText(App.getCurrentRadioTrack().getName());
         play.setBackgroundResource(R.drawable.ic_pause);
     }
 
@@ -312,7 +345,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackNext() {
-        title.setText(App.getCurrentRadioTrack().getTitle());
+        title.setText(App.getCurrentRadioTrack().getName());
         play.setBackgroundResource(R.drawable.ic_pause);
     }
 

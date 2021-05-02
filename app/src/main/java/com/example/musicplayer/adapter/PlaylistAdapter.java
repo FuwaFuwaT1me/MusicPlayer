@@ -7,15 +7,16 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.Playlist;
 import com.example.musicplayer.database.Track;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackAdapter extends BaseAdapter {
-    private List<Track> data = new ArrayList<>();
+public class PlaylistAdapter extends BaseAdapter {
+    private List<Playlist> data = new ArrayList<>();
 
-    public void setData(List<Track> mData) {
+    public void setData(List<Playlist> mData) {
         data.clear();
         data.addAll(mData);
         notifyDataSetChanged();
@@ -38,14 +39,14 @@ public class TrackAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TrackAdapter.ViewHolder holder;
+        PlaylistAdapter.ViewHolder holder;
         if (convertView == null) {
             convertView = LayoutInflater.from(parent.getContext()).
                     inflate(R.layout.list_item, parent, false);
-            holder = new TrackAdapter.ViewHolder(convertView);
+            holder = new PlaylistAdapter.ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
-            holder = (TrackAdapter.ViewHolder) convertView.getTag();
+            holder = (PlaylistAdapter.ViewHolder) convertView.getTag();
         }
         holder.info.setText(data.get(position).getName());
         holder.info.setSelected(true);

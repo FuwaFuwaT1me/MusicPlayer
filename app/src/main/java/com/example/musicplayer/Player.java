@@ -3,7 +3,7 @@ package com.example.musicplayer;
 import android.content.Intent;
 import android.media.MediaPlayer;
 
-import com.example.musicplayer.music.Track;
+import com.example.musicplayer.database.Track;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +147,7 @@ public class Player {
 
     public  String getCurrentTitle() {
         if (currentSong == -1) return "";
-        return getCurrentTrack().getTitle();
+        return getCurrentTrack().getName();
     }
 
     public  int getPlayerId() {

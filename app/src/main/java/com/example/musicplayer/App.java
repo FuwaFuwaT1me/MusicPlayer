@@ -9,10 +9,13 @@ import android.widget.Toast;
 import androidx.room.Room;
 
 import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.Playlist;
+import com.example.musicplayer.database.TrackPlaylist;
 import com.example.musicplayer.music.SongActivity;
-import com.example.musicplayer.music.Track;
+import com.example.musicplayer.database.Track;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class App extends Application {
@@ -35,19 +38,34 @@ public class App extends Application {
     private static boolean isRepeated = false;
     private static boolean isShuffled = false;
     private static AppDatabase db;
-
-    private App() {}
+    private static int playlistIndex = 0;
+    private static int playlistToView;
+    private static List<Integer> playlistIndexes = new ArrayList<>();
+    private static List<Integer> selected = new ArrayList<>();
 
     @Override
     public void onCreate() {
         super.onCreate();
         uniqueInstance = this;
-        db = Room.databaseBuilder(this, AppDatabase.class, "trackDB").build();
+        db = Room.databaseBuilder(this, AppDatabase.class, "database")
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build();
         radioList.add(new Track("Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
         radioList.add(new Track("Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
         radioList.add(new Track("Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
         radioList.add(new Track("Rock radio", "http://galnet.ru:8000/hard"));
         radioList.add(new Track("Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+
+        if (db.playlistDao().ifExist()) {
+            clearPlaylistIndexes();
+            List<Playlist> list = db.playlistDao().getAll();
+            for (Playlist playlist : list) {
+                App.addPlaylistIndex(playlist.getId());
+            }
+            playlistIndex = list.get(list.size() - 1).getId();
+            incPlaylistIndex();
+        }
     }
 
     public static App getInstance() {
@@ -56,6 +74,66 @@ public class App extends Application {
 
     public static AppDatabase getDb() {
         return db;
+    }
+
+    public static void addSelected(int id) {
+        selected.add(id);
+    }
+
+    public static void removeSelected(int id) {
+        selected.remove((Integer)id);
+    }
+
+    public static List<Integer> getSelected() {
+        return selected;
+    }
+
+    public static int getSelectedIndex(int id) {
+        return selected.get(id);
+    }
+
+    public static void clearSelected(int id) {
+        selected.clear();
+    }
+
+    public static void addPlaylistIndex(int id) {
+        playlistIndexes.add(id);
+    }
+
+    public static void removePlaylistIndex(int id) {
+        playlistIndexes.remove(id);
+    }
+
+    public static int getPlaylistIndexById(int id) {
+        return playlistIndexes.get(id);
+    }
+
+    public static void clearPlaylistIndexes() {
+        playlistIndexes.clear();
+    }
+
+    public static List<Integer> getPlaylistIndexes() {
+        return playlistIndexes;
+    }
+
+    public static int getPlaylistToView() {
+        return playlistToView;
+    }
+
+    public static void setPlaylistToView(int playlistToView) {
+        App.playlistToView = playlistToView;
+    }
+
+    public static int getPlaylistIndex() {
+        return playlistIndex;
+    }
+
+    public static void setPlaylistIndex(int playlistIndex) {
+        App.playlistIndex = playlistIndex;
+    }
+
+    public static void incPlaylistIndex() {
+        playlistIndex++;
     }
 
     public static void setIsRepeated(boolean temp) {
@@ -165,12 +243,12 @@ public class App extends Application {
 
     public static String getCurrentPath() {
         if (currentSong == -1) return "";
-        return getCurrentTrack().getPath();
+        return queue.get(currentSong).getPath();
     }
 
     public static String getCurrentTitle() {
         if (currentSong == -1) return "";
-        return getCurrentTrack().getTitle();
+        return queue.get(currentSong).getName();
     }
 
     public static int getPlayerId() {

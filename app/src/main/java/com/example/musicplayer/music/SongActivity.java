@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.musicplayer.App;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Track;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
@@ -43,6 +44,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     BarVisualizer visualizer;
     boolean running = true;
     NotificationManager notificationManager;
+    AppDatabase db;
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -79,6 +81,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         visualizer = findViewById(R.id.bar);
         repeat = findViewById(R.id.repeat);
         shuffle = findViewById(R.id.shuffle);
+
+        db = App.getDb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
@@ -233,9 +237,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
     private void returnQueueToNormal() {
         App.clearQueue();
-        for (int i = 0; i < App.getTrackListSize(); i++) {
-            App.addToQueue(App.getTrack(i));
-        }
+        for (Track track : db.trackDao().getAll()) App.addToQueue(track);
     }
 
     private void shuffleQueue() {

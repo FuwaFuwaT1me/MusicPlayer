@@ -64,33 +64,6 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
         init();
 
-        //LOGS-------------------------
-//        db.playlistDao().insert(new Playlist(App.getPlaylistIndex(), "playlist_name_1"));
-//        App.incPlaylistIndex();
-//        db.playlistDao().insert(new Playlist(App.getPlaylistIndex(), "playlist_name_2"));
-//        App.incPlaylistIndex();
-
-//        db.trackPlaylistDao().insert(new TrackPlaylist(5, 0));
-//        db.trackPlaylistDao().insert(new TrackPlaylist(10, 1));
-//        db.trackPlaylistDao().insert(new TrackPlaylist(6, 0));
-//        db.trackPlaylistDao().insert(new TrackPlaylist(15, 1));
-
-//        List<Track> list = db.trackDao().getAll();
-//        for (Track track : list) {
-//            Log.d("testing", track.getId() + " " + track.getName() + " " + track.getPath());
-//        }
-//
-//        List<Playlist> list1 = db.playlistDao().getAll();
-//        for (Playlist playlist : list1) {
-//            Log.d("testing", playlist.getId() + " " + playlist.getName());
-//        }
-//
-//        List<TrackPlaylist> list2 = db.trackPlaylistDao().getAll();
-//        for (TrackPlaylist trackPlaylist : list2) {
-//            Log.d("testing", trackPlaylist.getTrackId() + " " + trackPlaylist.getPlaylistId());
-//        }
-//        //LOGS-----------------------
-
         if (App.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {

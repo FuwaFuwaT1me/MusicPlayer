@@ -20,8 +20,8 @@
             android:buttonTint="@color/av_red"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:clickable="false"
-            android:focusable="false"
+            android:clickable="true"
+            android:focusable="auto"
             android:focusableInTouchMode="false"/>
 
         <ImageView
@@ -50,6 +50,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:ellipsize="marquee"
             android:scrollHorizontally="true"
+
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_alignParentRight="true"

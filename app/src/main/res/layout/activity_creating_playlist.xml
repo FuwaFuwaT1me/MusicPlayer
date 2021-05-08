@@ -6,24 +6,19 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <RelativeLayout
-        android:id="@+id/playlistLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="50dp">
+    <Button
+        android:id="@+id/addingBack"
+        android:layout_width="50dp"
+        android:background="@drawable/ic_back"
+        android:layout_height="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentLeft="true"/>
 
-        <Button
-            android:id="@+id/addingBack"
-            android:layout_width="50dp"
-            android:background="@drawable/ic_back"
-            android:layout_height="50dp"
-            android:layout_marginLeft="10dp"
-            android:layout_alignParentLeft="true"/>
 
-    </RelativeLayout>
 
     <EditText
         android:id="@+id/playlistNameET"
-        android:layout_below="@id/playlistLinearLayout"
+        android:layout_below="@id/addingBack"
         android:layout_width="match_parent"
         android:hint="Playlist name"
         android:paddingLeft="5dp"

@@ -2,28 +2,24 @@ package com.example.musicplayer.Services;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.IBinder;
-import android.provider.MediaStore;
-import android.view.View;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.example.musicplayer.App;
-import com.example.musicplayer.MainActivity;
+import com.example.musicplayer.Player;
 
-import java.io.File;
 import java.io.IOException;
 
 public class BackgroundMusicService extends Service {
+    Player player;
     Boolean isFromSource = false;
     Boolean isPlayedBefore = false;
 
@@ -31,57 +27,57 @@ public class BackgroundMusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        if (App.getSource().equals(".")) {
+        player = App.getApp().getPlayer();
+        if (player.getSource().equals(".")) {
             isFromSource = false;
-            App.setPlayer(MediaPlayer.create(getApplicationContext(), Uri.parse(App.getCurrentPath())));
+            player.setMediaPlayer(MediaPlayer.create(this, Uri.parse(player.getCurrentPath())));
         }
         else {
             try {
-                App.createEmptyPlayer();
-                App.getPlayer().setAudioAttributes(
+                player.createEmptyPlayer();
+                player.getMediaPlayer().setAudioAttributes(
                         new AudioAttributes.Builder()
                                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                                 .setUsage(AudioAttributes.USAGE_MEDIA)
                                 .build()
                 );
-                App.getPlayer().setAudioStreamType(AudioManager.STREAM_MUSIC);
-                App.getPlayer().setDataSource(App.getSource());
-                App.getPlayer().prepare();
+                player.getMediaPlayer().setAudioStreamType(AudioManager.STREAM_MUSIC);
+                player.getMediaPlayer().setDataSource(player.getSource());
+                player.getMediaPlayer().prepare();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             isFromSource = true;
         }
-        App.getPlayer().setVolume(100, 100);
+        player.getMediaPlayer().setVolume(100, 100);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (!isFromSource) {
             if (!isPlayedBefore) {
-                if (App.isAnotherSong()) App.getPlayer().seekTo(0);
-                else App.getPlayer().seekTo(App.getMediaPlayerCurrentPosition());
+                if (player.isAnotherSong()) player.getMediaPlayer().seekTo(0);
+                else player.getMediaPlayer().seekTo(player.getMediaPlayerCurrentPosition());
                 isPlayedBefore = true;
             }
         }
-        App.setIsPlaying(true);
-        App.getPlayer().start();
-        App.setPlayerId(App.getPlayer().getAudioSessionId());
-        App.setCurrentDuration(App.getPlayer().getDuration());
+        player.setIsPlaying(true);
+        player.getMediaPlayer().start();
+        player.setPlayerId(player.getMediaPlayer().getAudioSessionId());
+        player.setCurrentDuration(player.getMediaPlayer().getDuration());
         Toast.makeText(this, "started", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        App.setIsPlaying(false);
-        if (!isFromSource) App.setMediaPlayerCurrentPosition(App.getPlayer().getCurrentPosition());
+        player.setIsPlaying(false);
+        if (!isFromSource) player.setMediaPlayerCurrentPosition(player.getCurrentPosition());
         isPlayedBefore = false;
-        App.setPlayerId(-1);
-        App.setCurrentDuration(App.getPlayer().getDuration());
-        App.getPlayer().stop();
-        App.getPlayer().release();
+        player.setPlayerId(-1);
+        player.setCurrentDuration(player.getMediaPlayer().getDuration());
+        player.getMediaPlayer().stop();
+        player.getMediaPlayer().release();
         //App.setPlayer(null);
     }
 

@@ -62,8 +62,8 @@ public class CreateNotification {
 
             String title, text = "";
 
-            if (App.getSource().equals(".")) {
-                String[] info = App.getCurrentTitle().replace("_", " ").split("-");
+            if (App.getApp().getPlayer().getSource().equals(".")) {
+                String[] info = App.getApp().getPlayer().getCurrentTitle().replace("_", " ").split("-");
                 title = info[0];
                 if (info.length >= 2) {
                     for (int i = 1; i < info.length; i++) text += info[i];
@@ -72,7 +72,7 @@ public class CreateNotification {
             }
             else {
                 title = "Radio";
-                String temp = App.getCurrentRadioTrack().getName();
+                String temp = App.getApp().getPlayer().getCurrentRadioTrack().getName();
                 text = temp.substring(0, temp.lastIndexOf(" "));
             }
 
@@ -90,8 +90,8 @@ public class CreateNotification {
                     .addAction(playButton, "Play", pendingIntentPlay)
                     .addAction(drw_next, "Next", pendingIntentNext)
                     .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0,1,2)
-                        .setMediaSession(mediaSessionCompat.getSessionToken()))
+                            .setShowActionsInCompactView(0,1,2)
+                            .setMediaSession(mediaSessionCompat.getSessionToken()))
                     .build();
 
             notificationManagerCompat.notify(1, notification);

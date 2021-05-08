@@ -1,8 +1,11 @@
 package com.example.musicplayer;
 
-import android.content.Intent;
 import android.media.MediaPlayer;
+import android.util.Log;
 
+import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.Playlist;
+import com.example.musicplayer.database.Radio;
 import com.example.musicplayer.database.Track;
 
 import java.util.ArrayList;
@@ -12,35 +15,138 @@ public class Player {
     private boolean isPlaying;
     private int currentSong = -1;
     private boolean isAnotherSong;
-    private Intent playerService;
+
     private int currentDuration;
     private int playerId;
     private int mediaPlayerCurrentPosition = 0;
     private boolean wasSongSwitched;
+
     private List<Track> trackList = new ArrayList<>();
-    private List<Track> radioList = new ArrayList<>();
-    private MediaPlayer player;
+    private List<Track> queue = new ArrayList<>();
+    private List<Integer> playlistIndexes = new ArrayList<>();
+    private List<Integer> selected = new ArrayList<>();
+
+    private MediaPlayer mediaPlayer;
     private String source = ".";
     private int currentRadio = -1;
-    private List<Track> queue = new ArrayList<>();
     private boolean isRepeated = false;
     private boolean isShuffled = false;
 
-    public Player() {
-        radioList.add(new Track("Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
-        radioList.add(new Track("Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
-        radioList.add(new Track("Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
-        radioList.add(new Track("Rock radio", "http://galnet.ru:8000/hard"));
-        radioList.add(new Track("Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+    private int playlistIndex = 0;
+    private int playlistToView;
+    private int currentPlaylist = -1;
 
+    private int radioIndex = 0;
+
+    private AppDatabase db;
+
+
+    public Player() {
+        db = App.getApp().getDb();
+
+        db.radioDao().insert(new Radio(radioIndex++, "Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
+        db.radioDao().insert(new Radio(radioIndex++, "Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
+        db.radioDao().insert(new Radio(radioIndex++, "Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
+        db.radioDao().insert(new Radio(radioIndex++, "Rock radio", "http://galnet.ru:8000/hard"));
+        db.radioDao().insert(new Radio(radioIndex++, "Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+
+        if (App.getApp().getDb().playlistDao().ifExist()) {
+            clearPlaylistIndexes();
+            List<Playlist> list = App.getApp().getDb().playlistDao().getAll();
+            for (Playlist playlist : list) {
+                this.addPlaylistIndex(playlist.getId());
+            }
+            playlistIndex = list.get(list.size() - 1).getId();
+            incPlaylistIndex();
+        }
     }
 
-    public  void setIsRepeated(boolean temp) {
+    public int getRadioIndex() {
+        return radioIndex;
+    }
+
+    public void incRadioIndex() {
+        radioIndex++;
+    }
+
+    public void setCurrentPlaylist(int currentPlaylist) {
+        this.currentPlaylist = currentPlaylist;
+    }
+
+    public int getCurrentPlaylist() {
+        return currentPlaylist;
+    }
+
+    public void addSelected(int id) {
+        selected.add(id);
+    }
+
+    public void removeSelected(int id) {
+        selected.remove((Integer)id);
+    }
+
+    public List<Integer> getSelected() {
+        return selected;
+    }
+
+    public int getSelectedIndex(int id) {
+        return selected.get(id);
+    }
+
+    public void clearSelected() {
+        selected.clear();
+    }
+
+    public void addPlaylistIndex(int id) {
+        playlistIndexes.add(id);
+    }
+
+    public void removePlaylistIndex(int id) {
+        playlistIndexes.remove(id);
+    }
+
+    public int getPlaylistIndexById(int id) {
+        return playlistIndexes.get(id);
+    }
+
+    public void clearPlaylistIndexes() {
+        playlistIndexes.clear();
+    }
+
+    public List<Integer> getPlaylistIndexes() {
+        return playlistIndexes;
+    }
+
+    public int getPlaylistToView() {
+        return playlistToView;
+    }
+
+    public void setPlaylistToView(int playlistToView) {
+        this.playlistToView = playlistToView;
+    }
+
+    public  int getPlaylistIndex() {
+        return playlistIndex;
+    }
+
+    public  void setPlaylistIndex(int playlistIndex) {
+        this.playlistIndex = playlistIndex;
+    }
+
+    public  void incPlaylistIndex() {
+        playlistIndex++;
+    }
+
+    public void setIsRepeated(boolean temp) {
         isRepeated = temp;
     }
 
-    public  boolean isRepeated() {
+    public boolean isRepeated() {
         return isRepeated;
+    }
+
+    public void setPlayer(MediaPlayer player) {
+        this.mediaPlayer = player;
     }
 
     public  void setIsShuffled(boolean temp) {
@@ -59,8 +165,8 @@ public class Player {
         queue.clear();
     }
 
-    public  Track getCurrentRadioTrack() {
-        return radioList.get(currentRadio);
+    public Radio getCurrentRadioTrack() {
+        return db.radioDao().getById(currentRadio);
     }
 
     public  void setCurrentRadio(int index) {
@@ -71,20 +177,16 @@ public class Player {
         return currentRadio;
     }
 
-    public  void addRadio(Track track) {
-        radioList.add(track);
+    public  void addRadio(Radio radio) {
+        db.radioDao().insert(radio);
     }
 
     public  void removeRadio(int index) {
-        radioList.remove(index);
-    }
-
-    public  List<Track> getRadioList() {
-        return radioList;
+        db.radioDao().delete(index);
     }
 
     public  int getRadioListSize() {
-        return radioList.size();
+        return db.radioDao().getAll().size();
     }
 
     public  void setSource(String source) {
@@ -96,7 +198,7 @@ public class Player {
     }
 
     public  void createEmptyPlayer() {
-        player = new MediaPlayer();
+        mediaPlayer = new MediaPlayer();
     }
 
     public  int getCurrentDuration() {
@@ -179,15 +281,7 @@ public class Player {
     }
 
     public  void setIsAnotherSong(boolean isAnotherSong) {
-        isAnotherSong = isAnotherSong;
-    }
-
-    public  Intent getPlayerService() {
-        return playerService;
-    }
-
-    public  void setPlayerService(Intent playerService) {
-        this.playerService = playerService;
+        this.isAnotherSong = isAnotherSong;
     }
 
     public  int getMediaPlayerCurrentPosition() {
@@ -211,10 +305,26 @@ public class Player {
     }
 
     public  MediaPlayer getMediaPlayer() {
-        return player;
+        return mediaPlayer;
     }
 
-    public  void setPlayer(MediaPlayer player) {
-        this.player = player;
+    public  void setMediaPlayer(MediaPlayer mediaPlayer) {
+        this.mediaPlayer = mediaPlayer;
+    }
+
+    public int getCurrentPosition() {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    public void setLooping(boolean b) {
+        this.mediaPlayer.setLooping(b);
+    }
+
+    public int getAudioSessionId() {
+        return this.mediaPlayer.getAudioSessionId();
+    }
+
+    public int getDuration() {
+        return this.mediaPlayer.getDuration();
     }
 }

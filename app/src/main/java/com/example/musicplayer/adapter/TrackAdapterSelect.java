@@ -1,22 +1,18 @@
 package com.example.musicplayer.adapter;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.example.musicplayer.App;
 import com.example.musicplayer.R;
-import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Track;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TrackAdapterSelect extends ArrayAdapter<Track> {
@@ -50,10 +46,10 @@ public class TrackAdapterSelect extends ArrayAdapter<Track> {
                     Track track = (Track) viewHolder.checkBox.getTag();
                     track.setSelected(buttonView.isChecked());
                     if (buttonView.isChecked()) {
-                        App.addSelected(track.getId());
+                        App.getApp().getPlayer().addSelected(track.getId());
                     }
                     else {
-                        App.removeSelected(track.getId());
+                        App.getApp().getPlayer().removeSelected(track.getId());
                     }
                 }
             });

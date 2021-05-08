@@ -11,19 +11,18 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.database.AppDatabase;
@@ -37,6 +36,8 @@ import java.util.List;
 import java.util.Random;
 
 public class SongActivity extends AppCompatActivity implements Runnable, Playable {
+    Player player;
+
     Button back, shuffle, prev, play, next, repeat, fastForward, fastBack;
     TextView songNameView, startTiming, endTiming;
     SeekBar seekBar;
@@ -58,12 +59,14 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song);
-
+        player = App.getApp().getPlayer();
         init();
     }
 
     @SuppressLint("UseCompatLoadingForColorStateLists")
     private void init() {
+        db = App.getApp().getDb();
+
         play = findViewById(R.id.play2);
         prev = findViewById(R.id.previous2);
         next = findViewById(R.id.next2);
@@ -75,14 +78,12 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         updateTitle();
         songNameView.setSelected(true);
         startTiming = findViewById(R.id.startTiming);
-        startTiming.setText(createTime(App.getMediaPlayerCurrentPosition()));
+        startTiming.setText(createTime(player.getMediaPlayerCurrentPosition()));
         endTiming = findViewById(R.id.endTiming);
-        endTiming.setText(createTime(App.getCurrentDuration()));
+        endTiming.setText(createTime(player.getCurrentDuration()));
         visualizer = findViewById(R.id.bar);
         repeat = findViewById(R.id.repeat);
         shuffle = findViewById(R.id.shuffle);
-
-        db = App.getDb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
@@ -90,25 +91,25 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
         }
 
-        int audioSessionId = App.getPlayerId();
+        int audioSessionId = player.getPlayerId();
         if (audioSessionId != -1) {
             visualizer.setAudioSessionId(audioSessionId);
         }
 
-        if (App.isPlaying()) {
+        if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
             play.setBackgroundResource(R.drawable.ic_play);
         }
 
-        if (!App.isRepeated()) {
+        if (!player.isRepeated()) {
             repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
         }
         else {
             repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
         }
 
-        if (!App.isShuffled()) {
+        if (!player.isShuffled()) {
             shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
         }
         else {
@@ -118,19 +119,19 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                App.setIsAnotherSong(false);
-                if (App.isPlaying()) {
+                player.setIsAnotherSong(false);
+                if (player.isPlaying()) {
                     createTrackNotification();
 
-                    App.setIsPlaying(false);
+                    player.setIsPlaying(false);
                     play.setBackgroundResource(R.drawable.ic_play);
-                    stopService(App.getPlayerService());
+                    stopService(App.getApp().getPlayerService());
                 } else {
                     createTrackNotification();
 
-                    App.setIsPlaying(true);
+                    player.setIsPlaying(true);
                     play.setBackgroundResource(R.drawable.ic_pause);
-                    startService(App.getPlayerService());
+                    startService(App.getApp().getPlayerService());
                 }
             }
         });
@@ -138,13 +139,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.getCurrentSong() - 1 >= 0) {
+                if (player.getCurrentSong() - 1 >= 0) {
                     moveTrack(-1);
                 }
                 else {
-                    if (!App.isPlaying()) startService(App.getPlayerService());
+                    if (!player.isPlaying()) startService(App.getApp().getPlayerService());
 
-                    App.getPlayer().seekTo(0);
+                    player.getMediaPlayer().seekTo(0);
                 }
                 play.setBackgroundResource(R.drawable.ic_pause);
                 createTrackNotification();
@@ -159,18 +160,18 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         fastForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.isPlaying()) {
-                    App.setIsAnotherSong(false);
-                    App.getPlayer().seekTo(App.getPlayer().getCurrentPosition()+10000);
+                if (player.isPlaying()) {
+                    player.setIsAnotherSong(false);
+                    player.getMediaPlayer().seekTo(player.getMediaPlayer().getCurrentPosition()+10000);
                 }
             }
         });
         fastBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (App.isPlaying()) {
-                    App.setIsAnotherSong(false);
-                    App.getPlayer().seekTo(App.getPlayer().getCurrentPosition()-10000);
+                if (player.isPlaying()) {
+                    player.setIsAnotherSong(false);
+                    player.getMediaPlayer().seekTo(player.getCurrentPosition()-10000);
                 }
             }
         });
@@ -191,21 +192,21 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                App.setIsAnotherSong(false);
-                App.getPlayer().seekTo(seekBar.getProgress());
+                player.setIsAnotherSong(false);
+                player.getMediaPlayer().seekTo(seekBar.getProgress());
             }
         });
         repeat.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("UseCompatLoadingForColorStateLists")
             @Override
             public void onClick(View v) {
-                if (!App.isRepeated()) {
-                    App.setIsRepeated(true);
+                if (!player.isRepeated()) {
+                    player.setIsRepeated(true);
                     repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
                 }
                 else {
-                    App.setIsRepeated(false);
-                    App.getPlayer().setLooping(false);
+                    player.setIsRepeated(false);
+                    player.setLooping(false);
                     repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
                 }
                 setRepeat();
@@ -215,51 +216,51 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @SuppressLint("UseCompatLoadingForColorStateLists")
             @Override
             public void onClick(View v) {
-                if (!App.isShuffled()) {
-                    App.setIsShuffled(true);
+                if (!player.isShuffled()) {
+                    player.setIsShuffled(true);
                     shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
                     shuffleQueue();
                 }
                 else {
-                    App.setIsShuffled(false);
+                    player.setIsShuffled(false);
                     shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
                     returnQueueToNormal();
                 }
             }
         });
 
-        seekBar.setMax(App.getCurrentDuration());
-        seekBar.setProgress(App.getMediaPlayerCurrentPosition());
+        seekBar.setMax(player.getCurrentDuration());
+        seekBar.setProgress(player.getMediaPlayerCurrentPosition());
         seekBarThread.start();
         seekBar.getProgressDrawable().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.MULTIPLY);
         seekBar.getThumb().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.SRC_IN);
     }
 
     private void returnQueueToNormal() {
-        App.clearQueue();
-        for (Track track : db.trackDao().getAll()) App.addToQueue(track);
+        player.clearQueue();
+        for (Track track : db.trackDao().getAll()) player.addToQueue(track);
     }
 
     private void shuffleQueue() {
         List<Track> temp = new ArrayList<>();
-        Track currTrack = App.getCurrentTrack();
-        int currIndex = App.getCurrentSong();
-        for (int i = 0; i < App.getQueueSize(); i++) {
-            temp.add(App.getTrackFromQueue(i));
+        Track currTrack = player.getCurrentTrack();
+        int currIndex = player.getCurrentSong();
+        for (int i = 0; i < player.getQueueSize(); i++) {
+            temp.add(player.getTrackFromQueue(i));
         }
-        App.clearQueue();
+        player.clearQueue();
         Random rnd = new Random();
 
         for (int i = 0; i < temp.size(); i++) {
             if (i == currIndex) {
-                App.addToQueue(currTrack);
+                player.addToQueue(currTrack);
                 temp.remove(currTrack);
                 continue;
             }
             int index = rnd.nextInt(temp.size());
             while (index == currIndex) index = rnd.nextInt(temp.size());
 
-            App.addToQueue(
+            player.addToQueue(
                     temp.get(index)
             );
             temp.remove(index);
@@ -281,15 +282,15 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     public void run() {
         while (running) {
             try {
-                if (App.getPlayer() != null) {
+                if (player.getMediaPlayer() != null) {
                     setRepeat();
-                    int audioSessionId = App.getPlayer().getAudioSessionId();
+                    int audioSessionId = player.getAudioSessionId();
                     if (audioSessionId != -1) {
                         visualizer.setAudioSessionId(audioSessionId);
                     }
                     Thread.sleep(1000);
-                    int total = App.getPlayer().getDuration();
-                    int current = App.getPlayer().getCurrentPosition();
+                    int total = player.getDuration();
+                    int current = player.getCurrentPosition();
                     startTiming.setText(createTime(current));
                     endTiming.setText(createTime(total));
                     seekBar.setMax(total);
@@ -330,7 +331,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     onTrackPrevious();
                     break;
                 case CreateNotification.ACTION_PLAY:
-                    if (!App.isPlaying()) onTrackPause();
+                    if (!player.isPlaying()) onTrackPause();
                     else onTrackPlay();
                     break;
                 case CreateNotification.ACTION_NEXT:
@@ -364,35 +365,35 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
     void createTrackNotification() {
         CreateNotification.createNotification(getApplicationContext(),
-                App.getCurrentTrack(),
+                player.getCurrentTrack(),
                 R.drawable.ic_pause,
-                App.getCurrentSong(),
-                App.getQueueSize()-1);
+                player.getCurrentSong(),
+                player.getQueueSize()-1);
     }
 
     void moveTrack(int direction) {
-        App.setWasSongSwitched(true);
-        App.setCurrentSong(App.getCurrentSong() + direction);
-        stopService(App.getPlayerService());
-        App.setIsAnotherSong(true);
+        player.setWasSongSwitched(true);
+        player.setCurrentSong(player.getCurrentSong() + direction);
+        stopService(App.getApp().getPlayerService());
+        player.setIsAnotherSong(true);
         updateTitle();
-        startService(App.getPlayerService());
+        startService(App.getApp().getPlayerService());
     }
 
     void updateTitle() {
-        songNameView.setText(App.getCurrentTitle());
+        songNameView.setText(player.getCurrentTitle());
     }
 
     void playNext() {
-        if (App.getCurrentSong() + 1 < App.getQueueSize()) {
+        if (player.getCurrentSong() + 1 < player.getQueueSize()) {
             moveTrack(1);
         }
         else {
-            App.getPlayer().seekTo(App.getPlayer().getDuration());
-            seekBar.setProgress(App.getPlayer().getDuration());
-            startTiming.setText(createTime(App.getPlayer().getDuration()));
+            player.getMediaPlayer().seekTo(player.getDuration());
+            seekBar.setProgress(player.getDuration());
+            startTiming.setText(createTime(player.getDuration()));
 
-            stopService(App.getPlayerService());
+            stopService(App.getApp().getPlayerService());
         }
 
         play.setBackgroundResource(R.drawable.ic_pause);
@@ -400,22 +401,22 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     }
 
     private void setRepeat() {
-        if (App.getPlayer() == null) return;
-        if (!App.isRepeated()) {
-            App.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        if (player.getMediaPlayer() == null) return;
+        if (!player.isRepeated()) {
+            player.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    App.getPlayer().setLooping(false);
+                    player.setLooping(false);
                     playNext();
                 }
             });
         }
         else {
-            App.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            player.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    startService(App.getPlayerService());
-                    App.getPlayer().setLooping(true);
+                    startService(App.getApp().getPlayerService());
+                    player.setLooping(true);
                 }
             });
         }

@@ -24,6 +24,7 @@ public class Player {
     private List<Track> trackList = new ArrayList<>();
     private List<Track> queue = new ArrayList<>();
     private List<Integer> playlistIndexes = new ArrayList<>();
+    private List<Integer> radioIndexes = new ArrayList<>();
     private List<Integer> selected = new ArrayList<>();
 
     private MediaPlayer mediaPlayer;
@@ -49,6 +50,11 @@ public class Player {
         db.radioDao().insert(new Radio(radioIndex++, "Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
         db.radioDao().insert(new Radio(radioIndex++, "Rock radio", "http://galnet.ru:8000/hard"));
         db.radioDao().insert(new Radio(radioIndex++, "Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+        radioIndexes.add(0);
+        radioIndexes.add(1);
+        radioIndexes.add(2);
+        radioIndexes.add(3);
+        radioIndexes.add(4);
 
         if (App.getApp().getDb().playlistDao().ifExist()) {
             clearPlaylistIndexes();
@@ -95,6 +101,26 @@ public class Player {
 
     public void clearSelected() {
         selected.clear();
+    }
+
+    public void addRadioIndex(int id) {
+        radioIndexes.add(id);
+    }
+
+    public void removeRadioIndex(int id) {
+        radioIndexes.remove(id);
+    }
+
+    public int getRadioIndexById(int id) {
+        return radioIndexes.get(id);
+    }
+
+    public void clearRadioIndexes() {
+        radioIndexes.clear();
+    }
+
+    public List<Integer> getRadioIndexes() {
+        return radioIndexes;
     }
 
     public void addPlaylistIndex(int id) {

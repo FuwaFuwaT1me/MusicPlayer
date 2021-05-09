@@ -115,6 +115,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     stopService(App.getApp().getPlayerService());
                     player.setSource(url.toString());
                     player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
+                    player.addRadioIndex(player.getRadioIndex());
                     player.incRadioIndex();
                     player.setCurrentRadio(player.getRadioListSize() - 1);
                     adapter.setData(db.radioDao().getAll());
@@ -124,6 +125,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     play.setBackgroundResource(R.drawable.ic_pause);
                     startService(App.getApp().getPlayerService());
                     updateTitle();
+
+                    for (int item : player.getRadioIndexes()) {
+                        Log.d("testing", item+"");
+                    }
+
                 } catch (MalformedURLException e) {
                     Toast.makeText(RadioActivity.this, "Неверный формат URL", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
@@ -309,8 +315,13 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             }
 
             player.removeRadio(radioToRemove);
+            player.removeRadioIndex(radioToRemove);
             adapter.setData(db.radioDao().getAll());
             adapter.notifyDataSetChanged();
+
+            for (int item1 : player.getRadioIndexes()) {
+                Log.d("testing", item1+"");
+            }
         }
         return true;
     }

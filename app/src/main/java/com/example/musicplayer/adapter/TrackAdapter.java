@@ -1,5 +1,6 @@
 package com.example.musicplayer.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,8 +41,10 @@ public class TrackAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         TrackAdapter.ViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(parent.getContext()).
-                    inflate(R.layout.list_item, parent, false);
+            if (data.get(position).isPlaying()) {
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_playing, parent, false);
+            }
+            else convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
             holder = new TrackAdapter.ViewHolder(convertView);
             convertView.setTag(holder);
         } else {

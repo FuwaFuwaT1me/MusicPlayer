@@ -36,7 +36,8 @@ public class TrackAdapterSelect extends ArrayAdapter<Track> {
         View view = null;
         if (convertView == null) {
             LayoutInflater inflater = context.getLayoutInflater();
-            view = inflater.inflate(R.layout.list_item_select, null);
+            if (list.get(position).isPlaying()) view = inflater.inflate(R.layout.list_item_select_playing, null);
+            else view = inflater.inflate(R.layout.list_item_select, null);
             final TrackAdapterSelect.ViewHolder viewHolder = new TrackAdapterSelect.ViewHolder();
             viewHolder.text = view.findViewById(R.id.txtSongName);
             viewHolder.checkBox = view.findViewById(R.id.checkbox);

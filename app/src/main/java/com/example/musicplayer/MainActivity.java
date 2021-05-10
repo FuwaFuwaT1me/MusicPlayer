@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,6 +43,8 @@ import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Playable {
     private static final String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
@@ -61,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
     AppDatabase db;
     int fileIndex = 0;
     Player player;
+    TrackAdapter trackAdapter;
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,8 +112,13 @@ public class MainActivity extends AppCompatActivity implements Playable {
         play = findViewById(R.id.play);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        listView = findViewById(R.id.listView);
         songName = findViewById(R.id.songName);
         songName.setSelected(true);
+
+        trackAdapter = new TrackAdapter();
+        trackAdapter.setData(db.trackDao().getAll());
+        listView.setAdapter(trackAdapter);
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 if (player.getCurrentPath().equals("")) return;
                 if (player.getCurrentSong() - 1 >= 0) {
                     onTrackPrevious();
+                    changePlaying();
                 }
             }
         });
@@ -137,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 if (player.getCurrentPath().equals("")) return;
                 if (player.getCurrentSong() + 1 < player.getQueueSize()) {
                     onTrackNext();
+                    changePlaying();
                 }
             }
         });
@@ -148,6 +160,32 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 if (player.isPlaying()) player.setMediaPlayerCurrentPosition(player.getMediaPlayerCurrentPosition());
                 Intent intent = new Intent(MainActivity.this, SongActivity.class);
                 startActivity(intent);
+            }
+        });
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (player.isPlaying()) stopService(App.getApp().getPlayerService());
+                player.setIsAnotherSong(true);
+                play.setBackgroundResource(R.drawable.ic_pause);
+
+                for (Track track : db.trackDao().getAll()) {
+                    db.trackDao().update(track.getId(), false);
+                    if (track.getId() == position) db.trackDao().update(track.getId(), true);
+                    Log.d("testing", ""+track.getId());
+                }
+
+                trackAdapter = null;
+                trackAdapter = new TrackAdapter();
+                trackAdapter.setData(db.trackDao().getAll());
+                trackAdapter.notifyDataSetChanged();
+                listView.setAdapter(trackAdapter);
+
+                player.setCurrentSong(position);
+                updateTitle();
+                player.setSource(".");
+                startService(App.getApp().getPlayerService());
+                createTrackNotification(R.drawable.ic_pause);
             }
         });
     }
@@ -237,8 +275,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
             final String path = file.getAbsolutePath();
             if (path.endsWith(".mp3") || path.endsWith(".wav")) {
                 db.trackDao().insert(new Track(fileIndex++, file.getName(), path));
-                //App.addTrack(new Track(file.getName().replace(".mp3", "").replace(".wav", ""),
-                //        path));
                 player.addToQueue(new Track(file.getName().replace(".mp3", "").replace(".wav", ""), path));
             }
         }
@@ -246,7 +282,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     @SuppressLint("NewApi")
     private void fillMusicList() {
-        player.clearTrackList();
         addMusicFilesFrom(String.valueOf(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS)));
         addMusicFilesFrom(String.valueOf(Environment.getExternalStoragePublicDirectory(
@@ -260,7 +295,14 @@ public class MainActivity extends AppCompatActivity implements Playable {
             requestPermissions(PERMISSIONS, REQUEST_PERMISSIONS);
             return;
         }
+
         updateTitle();
+
+        trackAdapter = null;
+        trackAdapter = new TrackAdapter();
+        trackAdapter.setData(db.trackDao().getAll());
+        trackAdapter.notifyDataSetChanged();
+        listView.setAdapter(trackAdapter);
 
         if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
@@ -274,26 +316,12 @@ public class MainActivity extends AppCompatActivity implements Playable {
         }
 
         if (!isMusicPlayerInit) {
-            final ListView listView = findViewById(R.id.listView);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if (player.isPlaying()) stopService(App.getApp().getPlayerService());
-                    player.setIsAnotherSong(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
-                    for (Track track : db.trackDao().getAll()) player.addToQueue(track);
-                    player.setCurrentSong(position);
-                    updateTitle();
-                    player.setSource(".");
-                    startService(App.getApp().getPlayerService());
-                    createTrackNotification(R.drawable.ic_pause);
-                }
-            });
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().update(track.getId(), false);
+            }
             fillMusicList();
-            final TrackAdapter trackAdapter = new TrackAdapter();
             trackAdapter.setData(db.trackDao().getAll());
-            listView.setAdapter(trackAdapter);
-
+            trackAdapter.notifyDataSetChanged();
             isMusicPlayerInit = true;
         }
     }
@@ -382,8 +410,9 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (player.getSource().equals(".") && player.getCurrentSong() + 1 < player.getQueueSize()) {
             moveTrack(1);
             createTrackNotification(R.drawable.ic_pause);
+            Log.d("testing", player.getCurrentSong() +" " + player.getQueueSize());
         }
-        else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
+        else if (!player.getSource().equals(".") && player.getCurrentRadio() + 1 < player.getRadioListSize()) {
             moveRadio(1);
             createRadioNotification(R.drawable.ic_pause);
         }
@@ -464,5 +493,18 @@ public class MainActivity extends AppCompatActivity implements Playable {
             }
         };
         new Thread(runnable).start();
+    }
+
+    void changePlaying() {
+        for (Track track : db.trackDao().getAll()) {
+            db.trackDao().update(track.getId(), false);
+            if (track.getId() == player.getCurrentSong()) db.trackDao().update(track.getId(), true);
+        }
+
+        trackAdapter = null;
+        trackAdapter = new TrackAdapter();
+        trackAdapter.setData(db.trackDao().getAll());
+        trackAdapter.notifyDataSetChanged();
+        listView.setAdapter(trackAdapter);
     }
 }

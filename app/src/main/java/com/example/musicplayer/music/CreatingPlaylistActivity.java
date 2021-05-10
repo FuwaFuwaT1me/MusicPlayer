@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -23,6 +24,7 @@ import com.example.musicplayer.App;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.adapter.TrackAdapterSelect;
 import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Playlist;
@@ -208,6 +210,20 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                 startService(App.getApp().getPlayerService());
                 createTrackNotification(R.drawable.ic_pause);
                 play.setBackgroundResource(R.drawable.ic_pause);
+
+                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+
+                for (Track track : db.trackDao().getAll()) {
+                    if (position == track.getId()) {
+                        db.trackDao().update(track.getId(), true);
+                        track.setPlaying(true);
+                    }
+                }
+
+                adapter = null;
+                adapter = new TrackAdapterSelect(CreatingPlaylistActivity.this, db.trackDao().getAll());
+                adapter.notifyDataSetChanged();
+                tracks.setAdapter(adapter);
             }
         });
     }

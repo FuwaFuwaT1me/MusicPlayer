@@ -21,7 +21,6 @@ public class Player {
     private int mediaPlayerCurrentPosition = 0;
     private boolean wasSongSwitched;
 
-    private List<Track> trackList = new ArrayList<>();
     private List<Track> queue = new ArrayList<>();
     private List<Integer> playlistIndexes = new ArrayList<>();
     private List<Integer> radioIndexes = new ArrayList<>();
@@ -50,11 +49,10 @@ public class Player {
         db.radioDao().insert(new Radio(radioIndex++, "Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
         db.radioDao().insert(new Radio(radioIndex++, "Rock radio", "http://galnet.ru:8000/hard"));
         db.radioDao().insert(new Radio(radioIndex++, "Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
-        radioIndexes.add(0);
-        radioIndexes.add(1);
-        radioIndexes.add(2);
-        radioIndexes.add(3);
-        radioIndexes.add(4);
+
+        for (Radio radio : db.radioDao().getAll()) {
+            radioIndexes.add(radio.getId());
+        }
 
         if (App.getApp().getDb().playlistDao().ifExist()) {
             clearPlaylistIndexes();
@@ -235,19 +233,8 @@ public class Player {
         this.currentDuration = currentDuration;
     }
 
-    public  void addTrack(Track track) {
-        trackList.add(track);
-    }
-
-    public  void removeTrack(int index) {
-        trackList.remove(index);
-    }
-
-    public  void clearTrackList() {
-        trackList.clear();
-    }
-
     public  int getQueueSize() {
+
         return queue.size();
     }
 
@@ -256,16 +243,8 @@ public class Player {
         return queue.get(currentSong);
     }
 
-    public  int getTrackListSize() {
-        return trackList.size();
-    }
-
     public  Track getTrackFromQueue(int index) {
         return queue.get(index);
-    }
-
-    public  Track getTrack(int index) {
-        return trackList.get(index);
     }
 
     public  String getCurrentPath() {
@@ -326,10 +305,6 @@ public class Player {
         this.wasSongSwitched = wasSongSwitched;
     }
 
-    public  List<Track> getTrackList() {
-        return trackList;
-    }
-
     public  MediaPlayer getMediaPlayer() {
         return mediaPlayer;
     }
@@ -352,5 +327,9 @@ public class Player {
 
     public int getDuration() {
         return this.mediaPlayer.getDuration();
+    }
+
+    public List<Track> getQueue() {
+        return queue;
     }
 }

@@ -6,14 +6,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.NetworkOnMainThreadException;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,8 +43,16 @@ import com.example.musicplayer.database.Track;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+
+import org.apache.http.params.HttpParams;
+import org.junit.Assert;
 
 public class RadioActivity extends AppCompatActivity implements Playable {
     Player player;
@@ -107,33 +121,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         setRadioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    URL url = new URL(radioUrl.getText().toString());
-                    if (!url.toString().startsWith("http://") && url.toString().startsWith("http")
-                            || !url.toString().startsWith("https://") && url.toString().startsWith("https"))
-                        throw new MalformedURLException("Неверный формат URL");
-                    stopService(App.getApp().getPlayerService());
-                    player.setSource(url.toString());
-                    player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
-                    player.addRadioIndex(player.getRadioIndex());
-                    player.incRadioIndex();
-                    player.setCurrentRadio(player.getRadioListSize() - 1);
-                    adapter.setData(db.radioDao().getAll());
-                    adapter.notifyDataSetChanged();
-                    player.setIsPlaying(true);
-                    player.setIsAnotherSong(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
-                    startService(App.getApp().getPlayerService());
-                    updateTitle();
-
-                    for (int item : player.getRadioIndexes()) {
-                        Log.d("testing", item+"");
-                    }
-
-                } catch (MalformedURLException e) {
-                    Toast.makeText(RadioActivity.this, "Неверный формат URL", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
+                new createRadio().execute(radioUrl.getText().toString());
             }
         });
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -155,6 +143,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 updateTitle();
                 startService(App.getApp().getPlayerService());
                 createRadioNotification(R.drawable.ic_pause);
+                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
             }
         });
         radioList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -233,6 +222,60 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 startActivity(intent);
             }
         });
+    }
+
+    private class createRadio extends AsyncTask<String, Integer, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+            URL url = null;
+            try {
+                url = new URL(urls[0]);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("HEAD");
+                con.connect();
+                if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    con.disconnect();
+                    throw new Exception();
+                }
+                con.disconnect();
+                return url.toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String url) {
+            if (url == null) {
+                Toast.makeText(RadioActivity.this, "Неверный URL", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
+            player.addRadioIndex(player.getRadioIndex());
+            player.incRadioIndex();
+
+            stopService(App.getApp().getPlayerService());
+            player.setSource(url.toString());
+            player.setCurrentRadio(player.getRadioListSize() - 1);
+            adapter.setData(db.radioDao().getAll());
+            adapter.notifyDataSetChanged();
+            player.setIsPlaying(true);
+            player.setIsAnotherSong(true);
+            play.setBackgroundResource(R.drawable.ic_pause);
+            startService(App.getApp().getPlayerService());
+            updateTitle();
+            for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+        }
     }
 
     void moveTrack(int direction) {
@@ -314,7 +357,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 player.setSource(".");
             }
 
-            player.removeRadio(radioToRemove);
+            player.removeRadio(player.getRadioIndexById(radioToRemove));
             player.removeRadioIndex(radioToRemove);
             adapter.setData(db.radioDao().getAll());
             adapter.notifyDataSetChanged();

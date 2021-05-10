@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey;
 @Entity
 public class Track {
     @PrimaryKey
-    private int id = -1;
+    private int id;
 
     private String name;
 
@@ -15,6 +15,8 @@ public class Track {
 
     @Ignore
     private boolean selected;
+
+    private boolean playing;
 
     @Ignore
     public Track(String name, String path) {
@@ -58,5 +60,13 @@ public class Track {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
     }
 }

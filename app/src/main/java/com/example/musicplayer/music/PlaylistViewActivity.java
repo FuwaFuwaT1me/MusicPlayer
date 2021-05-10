@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -117,6 +118,24 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 createTrackNotification(R.drawable.ic_pause);
                 play.setBackgroundResource(R.drawable.ic_pause);
                 player.setCurrentPlaylist(player.getPlaylistToView());
+
+                List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
+
+                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+
+                for (Track track : updatedTracks) {
+                    if (updatedTracks.get(position).getId() == track.getId()) {
+                        db.trackDao().update(track.getId(), true);
+                        track.setPlaying(true);
+                    }
+                    Log.d("testing", track.getId()+"");
+                }
+
+                adapter = null;
+                adapter = new TrackAdapter();
+                adapter.setData(updatedTracks);
+                adapter.notifyDataSetChanged();
+                tracks.setAdapter(adapter);
             }
         });
         play.setOnClickListener(new View.OnClickListener() {
@@ -202,6 +221,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     }
 
     List<Track> getPlaylistTracks(int playlistId) {
+        trackList.clear();
         List<TrackPlaylist> temp = db.trackPlaylistDao().getAllByPlaylistId(playlistId);
 
         for (TrackPlaylist item : temp) {

@@ -20,8 +20,8 @@ import java.io.IOException;
 
 public class BackgroundMusicService extends Service {
     Player player;
-    Boolean isFromSource = false;
-    Boolean isPlayedBefore = false;
+    boolean isFromSource = false;
+    boolean isPlayedBefore = false;
 
     @SuppressLint("NewApi")
     @Override
@@ -78,7 +78,6 @@ public class BackgroundMusicService extends Service {
         player.setCurrentDuration(player.getMediaPlayer().getDuration());
         player.getMediaPlayer().stop();
         player.getMediaPlayer().release();
-        //App.setPlayer(null);
     }
 
     @Nullable

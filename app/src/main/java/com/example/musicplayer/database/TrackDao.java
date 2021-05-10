@@ -24,8 +24,8 @@ public interface TrackDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Track track);
 
-    @Update
-    void update(Track track);
+    @Query("UPDATE Track SET playing = :playing WHERE id = :id")
+    void update(int id, boolean playing);
 
     @Delete
     void delete(Track track);

@@ -13,15 +13,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
+import com.example.musicplayer.RecyclerItemClickListener;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
@@ -36,7 +40,7 @@ import java.util.List;
 public class PlaylistViewActivity extends AppCompatActivity implements Playable {
     Player player;
     TextView playlistName;
-    ListView tracks;
+    RecyclerView tracks;
     Button back;
     TrackAdapter adapter;
     AppDatabase db;
@@ -92,9 +96,15 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
         db = App.getApp().getDb();
 
+        for (Track track : getPlaylistTracks(player.getPlaylistToView())) {
+            Log.d("testing", track.getId()+"");
+        }
+
         adapter = new TrackAdapter();
         adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
         tracks.setAdapter(adapter);
+        tracks.setLayoutManager(new LinearLayoutManager(this));
+        tracks.setHasFixedSize(true);
 
         playlistName.setText(db.playlistDao().getById(player.getPlaylistToView()).getName());
 
@@ -104,40 +114,37 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 finish();
             }
         });
-        tracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                stopService(App.getApp().getPlayerService());
-                player.clearQueue();
-                for (Track track : trackList) player.addToQueue(track);
-                player.setCurrentSong(position);
-                player.setIsPlaying(true);
-                player.setIsAnotherSong(true);
-                player.setSource(".");
-                startService(App.getApp().getPlayerService());
-                createTrackNotification(R.drawable.ic_pause);
-                play.setBackgroundResource(R.drawable.ic_pause);
-                player.setCurrentPlaylist(player.getPlaylistToView());
+        tracks.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, tracks, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override public void onItemClick(View view, int position) {
+                        stopService(App.getApp().getPlayerService());
+                        player.clearQueue();
+                        for (Track track : trackList) player.addToQueue(track);
+                        player.setCurrentSong(position);
+                        player.setIsPlaying(true);
+                        player.setIsAnotherSong(true);
+                        player.setSource(".");
+                        startService(App.getApp().getPlayerService());
+                        createTrackNotification(R.drawable.ic_pause);
+                        play.setBackgroundResource(R.drawable.ic_pause);
+                        player.setCurrentPlaylist(player.getPlaylistToView());
 
-                List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
+                        List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
 
-                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+                        for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
 
-                for (Track track : updatedTracks) {
-                    if (updatedTracks.get(position).getId() == track.getId()) {
-                        db.trackDao().update(track.getId(), true);
-                        track.setPlaying(true);
+                        for (Track track : updatedTracks) {
+                            if (updatedTracks.get(position).getId() == track.getId()) {
+                                db.trackDao().update(track.getId(), true);
+                                track.setPlaying(true);
+                            }
+                        }
+
+                        adapter.setData(updatedTracks);
+                        adapter.notifyDataSetChanged();
                     }
-                    Log.d("testing", track.getId()+"");
-                }
-
-                adapter = null;
-                adapter = new TrackAdapter();
-                adapter.setData(updatedTracks);
-                adapter.notifyDataSetChanged();
-                tracks.setAdapter(adapter);
-            }
-        });
+                })
+        );
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

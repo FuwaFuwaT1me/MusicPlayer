@@ -14,8 +14,6 @@
         android:layout_marginLeft="10dp"
         android:layout_alignParentLeft="true"/>
 
-
-
     <EditText
         android:id="@+id/playlistNameET"
         android:layout_below="@id/addingBack"
@@ -48,15 +46,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/addingTracks"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:divider="@android:color/transparent"
             android:dividerHeight="10.0sp"
             android:padding="8dp"
-            android:layout_weight="1">
-        </ListView>
+            android:layout_weight="1"
+            tools:listitem="@layout/list_item_select"/>
 
         <fragment class="com.example.musicplayer.BottomFragment"
             android:id="@+id/bottom_panel"

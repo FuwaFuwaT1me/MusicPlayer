@@ -17,12 +17,16 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
+import com.example.musicplayer.RecyclerItemClickListener;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.adapter.TrackAdapterSelect;
@@ -34,12 +38,13 @@ import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CreatingPlaylistActivity extends AppCompatActivity implements Playable {
     Player player;
     Button create, back;
-    ListView tracks;
+    RecyclerView tracks;
     EditText playlistName;
     AppDatabase db;
     TrackAdapterSelect adapter;
@@ -93,8 +98,11 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
 
         db = App.getApp().getDb();
 
-        adapter = new TrackAdapterSelect(this, db.trackDao().getAll());
+        adapter = new TrackAdapterSelect(this);
+        adapter.setData(db.trackDao().getAll());
         tracks.setAdapter(adapter);
+        tracks.setLayoutManager(new LinearLayoutManager(this));
+        tracks.setHasFixedSize(true);
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,6 +117,8 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                 player.incPlaylistIndex();
                 db.playlistDao().insert(playlist);
                 List<Track> tracks = new ArrayList<>();
+
+                Collections.sort(player.getSelected());
 
                 for (int i = 0; i < player.getSelected().size(); i++) {
                     tracks.add(db.trackDao().getById(player.getSelectedIndex(i)));
@@ -196,36 +206,35 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                 startActivity(intent);
             }
         });
-        tracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Log.d("testing", "tapped");
-                stopService(App.getApp().getPlayerService());
-                player.clearQueue();
-                for (Track track : db.trackDao().getAll()) player.addToQueue(track);
-                player.setCurrentSong(position);
-                player.setIsPlaying(true);
-                player.setIsAnotherSong(true);
-                player.setSource(".");
-                startService(App.getApp().getPlayerService());
-                createTrackNotification(R.drawable.ic_pause);
-                play.setBackgroundResource(R.drawable.ic_pause);
-
-                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
-
-                for (Track track : db.trackDao().getAll()) {
-                    if (position == track.getId()) {
-                        db.trackDao().update(track.getId(), true);
-                        track.setPlaying(true);
-                    }
-                }
-
-                adapter = null;
-                adapter = new TrackAdapterSelect(CreatingPlaylistActivity.this, db.trackDao().getAll());
-                adapter.notifyDataSetChanged();
-                tracks.setAdapter(adapter);
-            }
-        });
+//        tracks.addOnItemTouchListener(
+//                new RecyclerItemClickListener(this, tracks, new RecyclerItemClickListener.OnItemClickListener() {
+//                    @Override public void onItemClick(View view, int position) {
+//
+//                        stopService(App.getApp().getPlayerService());
+//                        player.clearQueue();
+//                        for (Track track : db.trackDao().getAll()) player.addToQueue(track);
+//                        player.setCurrentSong(position);
+//                        player.setIsPlaying(true);
+//                        player.setIsAnotherSong(true);
+//                        player.setSource(".");
+//                        startService(App.getApp().getPlayerService());
+//                        createTrackNotification(R.drawable.ic_pause);
+//                        play.setBackgroundResource(R.drawable.ic_pause);
+//
+//                        for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+//
+//                        for (Track track : db.trackDao().getAll()) {
+//                            if (position == track.getId()) {
+//                                db.trackDao().update(track.getId(), true);
+//                                track.setPlaying(true);
+//                            }
+//                        }
+//
+//                        adapter.setData(db.trackDao().getAll());
+//                        adapter.notifyDataSetChanged();
+//                    }
+//                })
+//        );
     }
 
     private void createChannel() {
@@ -338,6 +347,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                     handler.post(new Runnable(){
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
+                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
                             updateTitle();
                         }
                     });

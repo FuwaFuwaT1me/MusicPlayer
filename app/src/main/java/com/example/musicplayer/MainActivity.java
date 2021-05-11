@@ -1,9 +1,12 @@
 package com.example.musicplayer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -23,10 +26,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     int fileIndex = 0;
     Player player;
     TrackAdapter trackAdapter;
-    ListView listView;
+    RecyclerView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
         trackAdapter = new TrackAdapter();
         trackAdapter.setData(db.trackDao().getAll());
         listView.setAdapter(trackAdapter);
+        listView.setLayoutManager(new LinearLayoutManager(this));
+        listView.setHasFixedSize(true);
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,32 +169,29 @@ public class MainActivity extends AppCompatActivity implements Playable {
                 startActivity(intent);
             }
         });
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (player.isPlaying()) stopService(App.getApp().getPlayerService());
-                player.setIsAnotherSong(true);
-                play.setBackgroundResource(R.drawable.ic_pause);
+        listView.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, listView,new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override public void onItemClick(View view, int position) {
+                        if (player.isPlaying()) stopService(App.getApp().getPlayerService());
+                        player.setIsAnotherSong(true);
+                        play.setBackgroundResource(R.drawable.ic_pause);
 
-                for (Track track : db.trackDao().getAll()) {
-                    db.trackDao().update(track.getId(), false);
-                    if (track.getId() == position) db.trackDao().update(track.getId(), true);
-                    Log.d("testing", ""+track.getId());
-                }
+                        for (Track track : db.trackDao().getAll()) {
+                            db.trackDao().update(track.getId(), false);
+                            if (track.getId() == position) db.trackDao().update(track.getId(), true);
+                        }
 
-                trackAdapter = null;
-                trackAdapter = new TrackAdapter();
-                trackAdapter.setData(db.trackDao().getAll());
-                trackAdapter.notifyDataSetChanged();
-                listView.setAdapter(trackAdapter);
+                        trackAdapter.setData(db.trackDao().getAll());
+                        trackAdapter.notifyDataSetChanged();
 
-                player.setCurrentSong(position);
-                updateTitle();
-                player.setSource(".");
-                startService(App.getApp().getPlayerService());
-                createTrackNotification(R.drawable.ic_pause);
-            }
-        });
+                        player.setCurrentSong(position);
+                        updateTitle();
+                        player.setSource(".");
+                        startService(App.getApp().getPlayerService());
+                        createTrackNotification(R.drawable.ic_pause);
+                    }
+                })
+        );
     }
 
     private void addDrawerItems() {
@@ -442,6 +446,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
         player.setIsAnotherSong(true);
         updateTitle();
         startService(App.getApp().getPlayerService());
+        play.setBackgroundResource(R.drawable.ic_pause);
     }
 
     void moveRadio(int direction) {
@@ -452,6 +457,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
         player.setWasSongSwitched(true);
         updateTitle();
         startService(App.getApp().getPlayerService());
+        play.setBackgroundResource(R.drawable.ic_pause);
     }
 
     void updateTitle() {
@@ -485,8 +491,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
                     handler.post(new Runnable(){
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
-                            if (player.getSource().equals(".")) songName.setText(player.getCurrentTitle());
-                            else songName.setText(player.getCurrentRadioTrack().getName());
+                            updateTitle();
                         }
                     });
                 }
@@ -500,11 +505,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             db.trackDao().update(track.getId(), false);
             if (track.getId() == player.getCurrentSong()) db.trackDao().update(track.getId(), true);
         }
-
-        trackAdapter = null;
-        trackAdapter = new TrackAdapter();
         trackAdapter.setData(db.trackDao().getAll());
         trackAdapter.notifyDataSetChanged();
-        listView.setAdapter(trackAdapter);
     }
 }

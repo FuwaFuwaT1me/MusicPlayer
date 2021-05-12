@@ -16,20 +16,16 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MusicPlayer">
+        android:theme="@style/MusicPlayer">
         <activity
             android:name=".music.RadioActivity"
             android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MusicPlayer">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:theme="@style/MusicPlayer">
         </activity>
+
         <activity
             android:name=".music.SongActivity"
             android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
@@ -45,6 +41,16 @@
         <activity
             android:name=".music.PlaylistViewActivity"
             android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
+
+        <activity
+            android:name=".HomeActivity"
+            android:theme="@style/Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <receiver android:name=".Services.NotificationActionService" />
         <service android:name=".Services.OnClearFromRecentService" />

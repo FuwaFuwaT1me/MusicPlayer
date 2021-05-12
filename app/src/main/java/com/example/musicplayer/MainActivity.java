@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Playable {
+    private static final int SPLASH_TIME_OUT = 4000;
     private static final String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
     private static final int REQUEST_PERMISSIONS = 12345;
     private static final int PERMISSIONS_COUNT = 2;

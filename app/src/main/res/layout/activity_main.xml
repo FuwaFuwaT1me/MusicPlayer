@@ -22,7 +22,7 @@
             android:dividerHeight="10.0sp"
             android:padding="8dp"
             android:layout_weight="1"
-            tools:listitem="@layout/list_item"/>
+            tools:listitem="@layout/list_item_like"/>
 
         <fragment class="com.example.musicplayer.BottomFragment"
             android:id="@+id/bottom_panel"

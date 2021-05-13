@@ -22,7 +22,7 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.MusicPlayer.NoActionBar">
+    <style name="Theme.MusicPlayer.NoActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

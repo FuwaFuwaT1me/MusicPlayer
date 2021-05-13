@@ -38,6 +38,7 @@ import android.widget.Toast;
 
 import com.example.musicplayer.Services.BackgroundMusicService;
 import com.example.musicplayer.Services.OnClearFromRecentService;
+import com.example.musicplayer.adapter.LikeTrackAdapter;
 import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Track;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     AppDatabase db;
     int fileIndex = 0;
     Player player;
-    TrackAdapter trackAdapter;
+    LikeTrackAdapter trackAdapter;
     RecyclerView listView;
 
     @Override
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
         songName = findViewById(R.id.songName);
         songName.setSelected(true);
 
-        trackAdapter = new TrackAdapter();
+        trackAdapter = new LikeTrackAdapter();
         trackAdapter.setData(db.trackDao().getAll());
         listView.setAdapter(trackAdapter);
         listView.setLayoutManager(new LinearLayoutManager(this));
@@ -303,11 +304,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
         updateTitle();
 
-        trackAdapter = null;
-        trackAdapter = new TrackAdapter();
         trackAdapter.setData(db.trackDao().getAll());
         trackAdapter.notifyDataSetChanged();
-        listView.setAdapter(trackAdapter);
 
         if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);

@@ -5,12 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import com.example.musicplayer.App;
 import com.example.musicplayer.Player;
@@ -20,7 +20,7 @@ import com.example.musicplayer.database.Track;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackAdapter extends Adapter<TrackAdapter.ViewHolder> {
+public class LikeTrackAdapter extends RecyclerView.Adapter<LikeTrackAdapter.ViewHolder> {
     private List<Track> data = new ArrayList<>();
 
     public void setData(List<Track> mData) {
@@ -32,8 +32,8 @@ public class TrackAdapter extends Adapter<TrackAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
-        TrackAdapter.ViewHolder holder = new TrackAdapter.ViewHolder(view);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_like, parent, false);
+        LikeTrackAdapter.ViewHolder holder = new LikeTrackAdapter.ViewHolder(view);
         return holder;
     }
 
@@ -58,11 +58,13 @@ public class TrackAdapter extends Adapter<TrackAdapter.ViewHolder> {
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView info;
         ImageView image;
+        Button like;
 
         ViewHolder(View view) {
             super(view);
             this.info = view.findViewById(R.id.txtSongName);
             this.image = view.findViewById(R.id.imgSong);
+            this.like = view.findViewById(R.id.likeButton);
         }
     }
 }

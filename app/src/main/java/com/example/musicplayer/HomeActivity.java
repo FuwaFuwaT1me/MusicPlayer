@@ -22,6 +22,6 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(homeIntent);
                 finish();
             }
-        }, 3000);
+        }, 1000);
     }
 }

@@ -43,6 +43,10 @@
             android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
 
         <activity
+            android:name=".music.LikedActivity"
+            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
+
+        <activity
             android:name=".HomeActivity"
             android:theme="@style/Splash">
             <intent-filter>

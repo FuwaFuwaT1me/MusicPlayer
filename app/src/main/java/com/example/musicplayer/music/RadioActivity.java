@@ -6,20 +6,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.NetworkOnMainThreadException;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,41 +25,38 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.LoadingDialog;
+import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
+import com.example.musicplayer.RecyclerItemClickListener;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.RadioAdapter;
-import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Radio;
 import com.example.musicplayer.database.Track;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
-
-import org.apache.http.params.HttpParams;
-import org.junit.Assert;
 
 public class RadioActivity extends AppCompatActivity implements Playable {
     Player player;
     Button setRadioButton, backButton;
     EditText radioUrl, radioTitle;
-    ListView radioList;
+    RecyclerView radioList;
     RadioAdapter adapter;
     Button play, prev, next;
     TextView title;
     NotificationManager notificationManager;
     boolean running = false;
-    int radioToRemove;
+    public static int radioToRemove;
     AppDatabase db;
 
     @Override
@@ -79,6 +71,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
         init();
 
+        App.getApp().setCurrentActivity(this);
+
         if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
@@ -88,7 +82,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
             title.setText(player.getCurrentRadioTrack().getName());
         }
-        else if (player.getSource().equals(".") && player.getCurrentSong() != -1) {
+        else if (player.getSource().equals(".") && player.getCurrentQueueTrack() != -1) {
             title.setText(player.getCurrentTitle());
         }
 
@@ -113,9 +107,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
         db = App.getApp().getDb();
 
-        adapter = new RadioAdapter();
+        adapter = new RadioAdapter(RadioActivity.this, this);
         adapter.setData(db.radioDao().getAll());
         radioList.setAdapter(adapter);
+        radioList.setLayoutManager(new LinearLayoutManager(this));
+        radioList.setHasFixedSize(false);
         registerForContextMenu(radioList);
 
         setRadioButton.setOnClickListener(new View.OnClickListener() {
@@ -128,29 +124,6 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 finish();
-            }
-        });
-        radioList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (player.getCurrentRadio() == position) return;
-                player.setCurrentRadio(position);
-                stopService(App.getApp().getPlayerService());
-                player.setIsPlaying(true);
-                player.setIsAnotherSong(true);
-                player.setSource(player.getCurrentRadioTrack().getPath());
-                play.setBackgroundResource(R.drawable.ic_pause);
-                updateTitle();
-                startService(App.getApp().getPlayerService());
-                createRadioNotification(R.drawable.ic_pause);
-                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
-            }
-        });
-        radioList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                radioToRemove = position;
-                return false;
             }
         });
         play.setOnClickListener(new View.OnClickListener() {
@@ -169,7 +142,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    if (player.getMediaPlayer() == null) player.setCurrentSong(0);
+                    if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause);
                     }
@@ -188,7 +161,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() - 1 >= 0) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -202,7 +176,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() + 1 < player.getQueueSize()) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -228,6 +203,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            App.getApp().createLoadingDialog(RadioActivity.this);
+            App.getApp().getLoadingDialog().startLoadingAnimation();
         }
 
         @Override
@@ -262,6 +239,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             }
             player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
             player.addRadioIndex(player.getRadioIndex());
+            int index = player.getRadioIndex();
             player.incRadioIndex();
 
             stopService(App.getApp().getPlayerService());
@@ -271,16 +249,23 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             adapter.notifyDataSetChanged();
             player.setIsPlaying(true);
             player.setIsAnotherSong(true);
-            play.setBackgroundResource(R.drawable.ic_pause);
             startService(App.getApp().getPlayerService());
-            updateTitle();
-            for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+
+            for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
+
+            for (Radio radio : db.radioDao().getAll()) {
+                db.radioDao().updatePlaying(radio.getId(), false);
+            }
+            db.radioDao().updatePlaying(index, true);
+
+            adapter.setData(db.radioDao().getAll());
+            adapter.notifyDataSetChanged();
         }
     }
 
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
-        player.setCurrentSong(player.getCurrentSong() + direction);
+        player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
         stopService(App.getApp().getPlayerService());
         player.setIsAnotherSong(true);
         updateTitle();
@@ -288,6 +273,9 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     }
 
     void moveRadio(int direction) {
+        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+        App.getApp().getLoadingDialog().startLoadingAnimation();
+
         stopService(App.getApp().getPlayerService());
         player.setCurrentRadio(player.getCurrentRadio() + direction);
         player.setSource(player.getCurrentRadioTrack().getPath());
@@ -308,7 +296,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
                 index,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
@@ -426,6 +414,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
                             updateTitle();
+                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
+                            else play.setBackgroundResource(R.drawable.ic_play);
                         }
                     });
                 }

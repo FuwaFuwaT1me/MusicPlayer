@@ -13,6 +13,8 @@ public class Radio {
 
     private String path;
 
+    private boolean playing;
+
     public Radio(int id, String name, String path) {
         this.id = id;
         this.name = name;
@@ -41,5 +43,13 @@ public class Radio {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
     }
 }

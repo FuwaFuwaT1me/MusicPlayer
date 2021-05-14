@@ -1,5 +1,6 @@
 package com.example.musicplayer;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -23,6 +24,8 @@ public class App extends Application {
     private Player player;
     private Intent playerService;
     private AppDatabase db;
+    private LoadingDialog loading;
+    private Activity currentActivity;
 
     public void setPlayerService(Intent playerService) {
         this.playerService = playerService;
@@ -57,5 +60,32 @@ public class App extends Application {
             player = new Player();
         }
         return player;
+    }
+
+    //Loading circle
+    public void createLoadingDialog(Activity activity) {
+        loading = new LoadingDialog(activity);
+    }
+
+    public void dismissLoading() {
+        this.loading.dismissDialog();
+    }
+
+    public LoadingDialog getLoadingDialog() {
+        return loading;
+    }
+
+    public void nullLoading() {
+        loading = null;
+    }
+    //Loading circle
+
+
+    public Activity getCurrentActivity() {
+        return currentActivity;
+    }
+
+    public void setCurrentActivity(Activity currentActivity) {
+        this.currentActivity = currentActivity;
     }
 }

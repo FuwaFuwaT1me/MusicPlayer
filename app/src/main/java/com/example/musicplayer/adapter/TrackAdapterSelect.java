@@ -1,12 +1,10 @@
 package com.example.musicplayer.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -19,8 +17,8 @@ import com.example.musicplayer.App;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.Radio;
 import com.example.musicplayer.database.Track;
-import com.example.musicplayer.music.CreatingPlaylistActivity;
 import com.example.musicplayer.notification.CreateNotification;
 
 import java.util.ArrayList;
@@ -62,7 +60,6 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
         holder.box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d("testing", "checked");
                 Track track = (Track) holder.box.getTag();
                 track.setSelected(buttonView.isChecked());
                 if (buttonView.isChecked()) {
@@ -79,25 +76,28 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
                 context.stopService(App.getApp().getPlayerService());
                 player.clearQueue();
                 for (Track track : db.trackDao().getAll()) player.addToQueue(track);
-                player.setCurrentSong(position);
+                player.setCurrentQueueTrack(position);
                 player.setIsPlaying(true);
                 player.setIsAnotherSong(true);
                 player.setSource(".");
                 context.startService(App.getApp().getPlayerService());
                 createTrackNotification(R.drawable.ic_pause);
-                //play.setBackgroundResource(R.drawable.ic_pause);
 
-                for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+                for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
 
                 for (Track track : db.trackDao().getAll()) {
                     if (position == track.getId()) {
-                        db.trackDao().update(track.getId(), true);
+                        db.trackDao().updatePlaying(track.getId(), true);
                         track.setPlaying(true);
                     }
                 }
 
+                for (Radio radio : db.radioDao().getAll()) db.radioDao().updatePlaying(radio.getId(), false);
+
                 setData(db.trackDao().getAll());
                 notifyDataSetChanged();
+
+                player.setIsShuffled(false);
             }
         });
         holder.box.setTag(list.get(position));
@@ -113,7 +113,7 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
         CreateNotification.createNotification(context.getApplicationContext(),
                 player.getCurrentTrack(),
                 index,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
@@ -129,40 +129,4 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
             this.image = view.findViewById(R.id.imgSong);
         }
     }
-
-//    @Override
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        View view = null;
-//        if (convertView == null) {
-//            LayoutInflater inflater = context.getLayoutInflater();
-//            if (list.get(position).isPlaying()) view = inflater.inflate(R.layout.list_item_select_playing, null);
-//            else view = inflater.inflate(R.layout.list_item_select, null);
-//            final TrackAdapterSelect.ViewHolder viewHolder = new TrackAdapterSelect.ViewHolder();
-//            viewHolder.text = view.findViewById(R.id.txtSongName);
-//            viewHolder.checkBox = view.findViewById(R.id.checkbox);
-//            viewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//                @Override
-//                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                    Track track = (Track) viewHolder.checkBox.getTag();
-//                    track.setSelected(buttonView.isChecked());
-//                    if (buttonView.isChecked()) {
-//                        App.getApp().getPlayer().addSelected(track.getId());
-//                    }
-//                    else {
-//                        App.getApp().getPlayer().removeSelected(track.getId());
-//                    }
-//                }
-//            });
-//            view.setTag(viewHolder);
-//            viewHolder.checkBox.setTag(list.get(position));
-//        }
-//        else {
-//            view = convertView;
-//            ((TrackAdapterSelect.ViewHolder) view.getTag()).checkBox.setTag(list.get(position));
-//        }
-//        TrackAdapterSelect.ViewHolder holder = (TrackAdapterSelect.ViewHolder) view.getTag();
-//        holder.text.setText(list.get(position).getName());
-//        holder.checkBox.setChecked(list.get(position).isSelected());
-//        return view;
-//    }
 }

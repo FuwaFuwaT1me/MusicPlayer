@@ -28,6 +28,9 @@ public class BackgroundMusicService extends Service {
     public void onCreate() {
         super.onCreate();
         player = App.getApp().getPlayer();
+
+        Log.d("testing", player.getSource());
+
         if (player.getSource().equals(".")) {
             isFromSource = false;
             player.setMediaPlayer(MediaPlayer.create(this, Uri.parse(player.getCurrentPath())));
@@ -66,6 +69,12 @@ public class BackgroundMusicService extends Service {
         player.setPlayerId(player.getMediaPlayer().getAudioSessionId());
         player.setCurrentDuration(player.getMediaPlayer().getDuration());
         Toast.makeText(this, "started", Toast.LENGTH_SHORT).show();
+
+        if (App.getApp().getLoadingDialog() != null) {
+            App.getApp().dismissLoading();
+            App.getApp().nullLoading();
+        }
+
         return START_STICKY;
     }
 

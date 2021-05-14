@@ -11,6 +11,7 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -139,7 +140,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.getCurrentSong() - 1 >= 0) {
+                if (player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
                 }
                 else {
@@ -242,29 +243,57 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     }
 
     private void shuffleQueue() {
-        List<Track> temp = new ArrayList<>();
-        Track currTrack = player.getCurrentTrack();
-        int currIndex = player.getCurrentSong();
-        for (int i = 0; i < player.getQueueSize(); i++) {
-            temp.add(player.getTrackFromQueue(i));
+        List<Track> liked = new ArrayList<>();
+        List<Track> others = new ArrayList<>();
+
+        for (Track track : db.trackDao().getAll()) {
+            if (track.isLiked()) liked.add(track);
+            else others.add(track);
         }
+
         player.clearQueue();
         Random rnd = new Random();
 
-        for (int i = 0; i < temp.size(); i++) {
-            if (i == currIndex) {
-                player.addToQueue(currTrack);
-                temp.remove(currTrack);
-                continue;
-            }
-            int index = rnd.nextInt(temp.size());
-            while (index == currIndex) index = rnd.nextInt(temp.size());
-
-            player.addToQueue(
-                    temp.get(index)
-            );
-            temp.remove(index);
+        int size = liked.size();
+        for (int i = 0; i < size; i++) {
+            int index = rnd.nextInt(liked.size());
+            player.addToQueue(liked.get(index));
+            liked.remove(index);
         }
+
+        Log.d("testing", ""+others.size());
+
+        size = others.size();
+        for (int i = 0; i < size; i++) {
+            int index = rnd.nextInt(others.size());
+            player.addToQueue(others.get(index));
+            others.remove(index);
+        }
+
+        int index = 0;
+        Track curr = null;
+        for (Track track : player.getQueue()) {
+            if (index == 0) {
+                curr = track;
+                Log.d("testing", "" + track.getId());
+                Log.d("testing", "" + curr.getId());
+                index++;
+            }
+            Log.d("testing", "id = " + track.getId());
+        }
+
+        player.setWasSongSwitched(true);
+        player.setCurrentQueueTrack(0);
+        stopService(App.getApp().getPlayerService());
+        player.setIsAnotherSong(true);
+        updateTitle();
+        startService(App.getApp().getPlayerService());
+        play.setBackgroundResource(R.drawable.ic_pause);
+
+        for (Track track : db.trackDao().getAll()) {
+            db.trackDao().updatePlaying(track.getId(), false);
+        }
+        db.trackDao().updatePlaying(curr.getId(), true);
     }
 
     private void createChannel() {
@@ -367,13 +396,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
                 R.drawable.ic_pause,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
-        player.setCurrentSong(player.getCurrentSong() + direction);
+        player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
         stopService(App.getApp().getPlayerService());
         player.setIsAnotherSong(true);
         updateTitle();
@@ -385,7 +414,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     }
 
     void playNext() {
-        if (player.getCurrentSong() + 1 < player.getQueueSize()) {
+        if (player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
             moveTrack(1);
         }
         else {

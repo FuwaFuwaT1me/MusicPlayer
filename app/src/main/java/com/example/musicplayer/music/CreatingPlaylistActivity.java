@@ -65,6 +65,8 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
 
         init();
 
+        App.getApp().setCurrentActivity(this);
+
         if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
@@ -74,7 +76,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
         if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
             title.setText(player.getCurrentRadioTrack().getName());
         }
-        else if (player.getSource().equals(".") && player.getCurrentSong() != -1) {
+        else if (player.getSource().equals(".") && player.getCurrentQueueTrack() != -1) {
             title.setText(player.getCurrentTitle());
         }
 
@@ -153,7 +155,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    if (player.getMediaPlayer() == null) player.setCurrentSong(0);
+                    if (player.getMediaPlayer() == null) player.getCurrentQueueTrack();
                     if (player.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause);
                     }
@@ -172,7 +174,8 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() - 1 >= 0) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -180,13 +183,15 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                     moveRadio(-1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() + 1 < player.getQueueSize()) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -194,6 +199,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                     moveRadio(1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         title.setOnClickListener(new View.OnClickListener() {
@@ -206,35 +212,6 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                 startActivity(intent);
             }
         });
-//        tracks.addOnItemTouchListener(
-//                new RecyclerItemClickListener(this, tracks, new RecyclerItemClickListener.OnItemClickListener() {
-//                    @Override public void onItemClick(View view, int position) {
-//
-//                        stopService(App.getApp().getPlayerService());
-//                        player.clearQueue();
-//                        for (Track track : db.trackDao().getAll()) player.addToQueue(track);
-//                        player.setCurrentSong(position);
-//                        player.setIsPlaying(true);
-//                        player.setIsAnotherSong(true);
-//                        player.setSource(".");
-//                        startService(App.getApp().getPlayerService());
-//                        createTrackNotification(R.drawable.ic_pause);
-//                        play.setBackgroundResource(R.drawable.ic_pause);
-//
-//                        for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
-//
-//                        for (Track track : db.trackDao().getAll()) {
-//                            if (position == track.getId()) {
-//                                db.trackDao().update(track.getId(), true);
-//                                track.setPlaying(true);
-//                            }
-//                        }
-//
-//                        adapter.setData(db.trackDao().getAll());
-//                        adapter.notifyDataSetChanged();
-//                    }
-//                })
-//        );
     }
 
     private void createChannel() {
@@ -251,7 +228,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
 
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
-        player.setCurrentSong(player.getCurrentSong() + direction);
+        player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
         stopService(App.getApp().getPlayerService());
         player.setIsAnotherSong(true);
         updateTitle();
@@ -259,6 +236,9 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
     }
 
     void moveRadio(int direction) {
+        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+        App.getApp().getLoadingDialog().startLoadingAnimation();
+
         stopService(App.getApp().getPlayerService());
         player.setCurrentRadio(player.getCurrentRadio() + direction);
         player.setSource(player.getCurrentRadioTrack().getPath());
@@ -279,7 +259,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
                 index,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
@@ -361,5 +341,14 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
     protected void onDestroy() {
         super.onDestroy();
         running = false;
+    }
+
+    void changePlaying() {
+        for (Track track : db.trackDao().getAll()) {
+            db.trackDao().updatePlaying(track.getId(), false);
+            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        }
+        adapter.setData(db.trackDao().getAll());
+        adapter.notifyDataSetChanged();
     }
 }

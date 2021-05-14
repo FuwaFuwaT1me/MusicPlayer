@@ -70,7 +70,7 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
             title.setText(player.getCurrentRadioTrack().getName());
         }
-        else if (player.getSource().equals(".") && player.getCurrentSong() != -1) {
+        else if (player.getSource().equals(".") && player.getCurrentQueueTrack() != -1) {
             title.setText(player.getCurrentTitle());
         }
 
@@ -142,7 +142,7 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    if (player.getMediaPlayer() == null) player.setCurrentSong(0);
+                    if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause);
                     }
@@ -161,7 +161,8 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() - 1 >= 0) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -175,7 +176,8 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() + 1 < player.getQueueSize()) {
+
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -247,16 +249,13 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         super.onResume();
         adapter.setData(db.playlistDao().getAll());
         adapter.notifyDataSetChanged();
-        if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
-        } else {
-            play.setBackgroundResource(R.drawable.ic_play);
-        }
+
+        App.getApp().setCurrentActivity(this);
     }
 
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
-        player.setCurrentSong(player.getCurrentSong() + direction);
+        player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
         stopService(App.getApp().getPlayerService());
         player.setIsAnotherSong(true);
         updateTitle();
@@ -264,6 +263,9 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
     }
 
     void moveRadio(int direction) {
+        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+        App.getApp().getLoadingDialog().startLoadingAnimation();
+
         stopService(App.getApp().getPlayerService());
         player.setCurrentRadio(player.getCurrentRadio() + direction);
         player.setSource(player.getCurrentRadioTrack().getPath());
@@ -284,7 +286,7 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
                 index,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
@@ -353,6 +355,8 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
                             updateTitle();
+                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
+                            else play.setBackgroundResource(R.drawable.ic_play);
                         }
                     });
                 }

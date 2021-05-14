@@ -25,7 +25,10 @@ public interface TrackDao {
     void insert(Track track);
 
     @Query("UPDATE Track SET playing = :playing WHERE id = :id")
-    void update(int id, boolean playing);
+    void updatePlaying(int id, boolean playing);
+
+    @Query("UPDATE Track SET liked = :liked WHERE id = :id")
+    void updateLiked(int id, boolean liked);
 
     @Delete
     void delete(Track track);

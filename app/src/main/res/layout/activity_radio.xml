@@ -61,20 +61,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <ListView
-        android:id="@+id/radioList"
-        android:layout_marginTop="10dp"
-        android:dividerHeight="10.0sp"
-        android:layout_below="@+id/setRadioButton"
-        android:background="@color/black"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"
+        android:layout_below="@id/setRadioButton"
+        android:background="@color/black">
 
-    <fragment class="com.example.musicplayer.BottomFragment"
-        android:id="@+id/bottom_panel"
-        android:layout_alignParentBottom="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout="@layout/bottom_panel_fragment" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/radioList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10.0sp"
+            android:padding="8dp"
+            android:layout_weight="1"
+            tools:listitem="@layout/list_item"/>
+
+        <fragment class="com.example.musicplayer.BottomFragment"
+            android:id="@+id/bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/bottom_panel_fragment" />
+
+    </LinearLayout>
 
 </RelativeLayout>

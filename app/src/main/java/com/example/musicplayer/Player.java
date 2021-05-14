@@ -13,7 +13,6 @@ import java.util.List;
 
 public class Player {
     private boolean isPlaying;
-    private int currentSong = -1;
     private boolean isAnotherSong;
 
     private int currentDuration;
@@ -40,6 +39,8 @@ public class Player {
 
     private AppDatabase db;
 
+    private int currentQueueTrack = -1;
+
 
     public Player() {
         db = App.getApp().getDb();
@@ -63,6 +64,14 @@ public class Player {
             playlistIndex = list.get(list.size() - 1).getId();
             incPlaylistIndex();
         }
+    }
+
+    public int getCurrentQueueTrack() {
+        return currentQueueTrack;
+    }
+
+    public void setCurrentQueueTrack(int currentQueueTrack) {
+        this.currentQueueTrack = currentQueueTrack;
     }
 
     public int getRadioIndex() {
@@ -234,13 +243,12 @@ public class Player {
     }
 
     public  int getQueueSize() {
-
         return queue.size();
     }
 
     public  Track getCurrentTrack() {
-        if (currentSong == -1) return null;
-        return queue.get(currentSong);
+        if (currentQueueTrack == -1) return null;
+        return queue.get(currentQueueTrack);
     }
 
     public  Track getTrackFromQueue(int index) {
@@ -248,12 +256,12 @@ public class Player {
     }
 
     public  String getCurrentPath() {
-        if (currentSong == -1) return "";
+        if (currentQueueTrack == -1) return "";
         return getCurrentTrack().getPath();
     }
 
     public  String getCurrentTitle() {
-        if (currentSong == -1) return "";
+        if (currentQueueTrack == -1) return "";
         return getCurrentTrack().getName();
     }
 
@@ -273,13 +281,13 @@ public class Player {
         this.isPlaying = isPlaying;
     }
 
-    public  int getCurrentSong() {
-        return currentSong;
-    }
-
-    public  void setCurrentSong(int currentSong) {
-        this.currentSong = currentSong;
-    }
+//    public  int getCurrentSong() {
+//        return currentSong;
+//    }
+//
+//    public  void setCurrentSong(int currentSong) {
+//        this.currentSong = currentSong;
+//    }
 
     public  boolean isAnotherSong() {
         return isAnotherSong;

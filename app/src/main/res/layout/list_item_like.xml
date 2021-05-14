@@ -50,8 +50,8 @@
             android:id="@+id/likeButton"
             android:background="@drawable/ic_unliked"
             android:layout_alignParentEnd="true"
-            android:layout_width="50dp"
-            android:layout_height="50dp"/>
+            android:layout_width="35dp"
+            android:layout_height="35dp"/>
 
     </RelativeLayout>
 

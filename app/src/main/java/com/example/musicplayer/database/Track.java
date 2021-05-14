@@ -18,6 +18,8 @@ public class Track {
 
     private boolean playing;
 
+    private boolean liked = false;
+
     @Ignore
     public Track(String name, String path) {
         this.name = name;
@@ -68,5 +70,13 @@ public class Track {
 
     public void setPlaying(boolean playing) {
         this.playing = playing;
+    }
+
+    public boolean isLiked() {
+        return liked;
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
     }
 }

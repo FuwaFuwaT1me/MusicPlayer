@@ -73,7 +73,7 @@ public class CreateNotification {
             else {
                 title = "Radio";
                 String temp = App.getApp().getPlayer().getCurrentRadioTrack().getName();
-                text = temp.substring(0, temp.lastIndexOf(" "));
+                if (text.split(" ").length >= 2) text = temp.substring(0, temp.lastIndexOf(" "));
             }
 
             notification = new NotificationCompat.Builder(context, CHANNEL_ID)

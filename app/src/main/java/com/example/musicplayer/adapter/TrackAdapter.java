@@ -41,6 +41,7 @@ public class TrackAdapter extends Adapter<TrackAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.info.setText(data.get(position).getName());
         holder.info.setSelected(true);
+
         if (data.get(position).isPlaying()) holder.image.setImageResource(R.drawable.ic_play);
         else holder.image.setImageResource(R.drawable.ic_music);
     }

@@ -11,10 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -29,6 +26,7 @@ import com.example.musicplayer.RecyclerItemClickListener;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
+import com.example.musicplayer.database.Radio;
 import com.example.musicplayer.database.Track;
 import com.example.musicplayer.database.TrackPlaylist;
 import com.example.musicplayer.notification.CreateNotification;
@@ -64,17 +62,12 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
         init();
 
+        App.getApp().setCurrentActivity(this);
+
         if (player.isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_pause);
         } else {
             play.setBackgroundResource(R.drawable.ic_play);
-        }
-
-        if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
-            title.setText(player.getCurrentRadioTrack().getName());
-        }
-        else if (player.getSource().equals(".") && player.getCurrentSong() != -1) {
-            title.setText(player.getCurrentTitle());
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -101,7 +94,22 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
         }
 
         adapter = new TrackAdapter();
-        adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
+
+        List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
+
+        for (Track track : updatedTracks) {
+            if (track.isPlaying()) {
+                for (Track updatedTrack : updatedTracks) {
+                    if (updatedTrack.getId() == track.getId()) {
+                        db.trackDao().updatePlaying(track.getId(), true);
+                        track.setPlaying(true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        adapter.setData(updatedTracks);
         tracks.setAdapter(adapter);
         tracks.setLayoutManager(new LinearLayoutManager(this));
         tracks.setHasFixedSize(true);
@@ -120,7 +128,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                         stopService(App.getApp().getPlayerService());
                         player.clearQueue();
                         for (Track track : trackList) player.addToQueue(track);
-                        player.setCurrentSong(position);
+                        player.setCurrentQueueTrack(position);
                         player.setIsPlaying(true);
                         player.setIsAnotherSong(true);
                         player.setSource(".");
@@ -129,20 +137,26 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                         play.setBackgroundResource(R.drawable.ic_pause);
                         player.setCurrentPlaylist(player.getPlaylistToView());
 
-                        List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
+                        for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
 
-                        for (Track track : db.trackDao().getAll()) db.trackDao().update(track.getId(), false);
+                        List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
 
                         for (Track track : updatedTracks) {
                             if (updatedTracks.get(position).getId() == track.getId()) {
-                                db.trackDao().update(track.getId(), true);
+                                db.trackDao().updatePlaying(track.getId(), true);
                                 track.setPlaying(true);
                             }
                         }
 
+                        for (Radio radio : db.radioDao().getAll()) db.radioDao().updatePlaying(radio.getId(), false);
+
                         adapter.setData(updatedTracks);
                         adapter.notifyDataSetChanged();
+
+                        player.setIsShuffled(false);
                     }
+                    @Override
+                    public void onLongItemClick(View view, int position) {}
                 })
         );
         play.setOnClickListener(new View.OnClickListener() {
@@ -160,7 +174,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                     play.setBackgroundResource(R.drawable.ic_play);
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    if (player.getMediaPlayer() == null) player.setCurrentSong(0);
+                    if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause);
                     }
@@ -179,7 +193,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() - 1 >= 0) {
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -187,13 +201,14 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                     moveRadio(-1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (player.getMediaPlayer() == null) return;
-                if (player.getSource().equals(".") && player.getCurrentSong() + 1 < player.getQueueSize()) {
+                if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
                     createTrackNotification(R.drawable.ic_pause);
                 }
@@ -201,6 +216,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                     moveRadio(1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         title.setOnClickListener(new View.OnClickListener() {
@@ -240,7 +256,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
-        player.setCurrentSong(player.getCurrentSong() + direction);
+        player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
         stopService(App.getApp().getPlayerService());
         player.setIsAnotherSong(true);
         updateTitle();
@@ -248,6 +264,9 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     }
 
     void moveRadio(int direction) {
+        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+        App.getApp().getLoadingDialog().startLoadingAnimation();
+
         stopService(App.getApp().getPlayerService());
         player.setCurrentRadio(player.getCurrentRadio() + direction);
         player.setSource(player.getCurrentRadioTrack().getPath());
@@ -268,7 +287,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
                 index,
-                player.getCurrentSong(),
+                player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
 
@@ -349,5 +368,14 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     protected void onDestroy() {
         super.onDestroy();
         running = false;
+    }
+
+    void changePlaying() {
+        for (Track track : db.trackDao().getAll()) {
+            db.trackDao().updatePlaying(track.getId(), false);
+            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        }
+        adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
+        adapter.notifyDataSetChanged();
     }
 }

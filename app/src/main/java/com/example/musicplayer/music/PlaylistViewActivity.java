@@ -321,6 +321,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
     @Override
     public void onTrackPrevious() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }
@@ -337,6 +338,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
     @Override
     public void onTrackNext() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }

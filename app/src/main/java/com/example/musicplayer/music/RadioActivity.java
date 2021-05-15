@@ -174,6 +174,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     moveRadio(-1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
@@ -189,6 +190,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     moveRadio(1);
                     createRadioNotification(R.drawable.ic_pause);
                 }
+                changePlaying();
             }
         });
         title.setOnClickListener(new View.OnClickListener() {
@@ -391,6 +393,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackPrevious() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }
@@ -407,6 +410,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackNext() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }
@@ -457,5 +461,14 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             }
         }
         return isWifiConn || isMobileConn;
+    }
+
+    void changePlaying() {
+        for (Radio radio : db.radioDao().getAll()) {
+            db.radioDao().updatePlaying(radio.getId(), false);
+            if (radio.getId() == player.getCurrentRadioTrack().getId()) db.radioDao().updatePlaying(radio.getId(), true);
+        }
+        adapter.setData(db.radioDao().getAll());
+        adapter.notifyDataSetChanged();
     }
 }

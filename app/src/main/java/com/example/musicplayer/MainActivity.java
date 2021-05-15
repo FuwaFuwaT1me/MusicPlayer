@@ -264,8 +264,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
         for (File file : files) {
             final String path = file.getAbsolutePath();
             if (path.endsWith(".mp3") || path.endsWith(".wav")) {
-                db.trackDao().insert(new Track(fileIndex++, file.getName(), path));
-                player.addToQueue(new Track(file.getName().replace(".mp3", "").replace(".wav", ""), path));
+                db.trackDao().insert(new Track(fileIndex++, player.updateTitle(file.getName()), path));
+                player.addToQueue(new Track(player.updateTitle(file.getName()), path));
             }
         }
     }
@@ -358,8 +358,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             moveRadio(-1);
             createRadioNotification(R.drawable.ic_pause);
         }
-        trackAdapter.setData(db.trackDao().getAll());
-        trackAdapter.notifyDataSetChanged();
+        changePlaying();
         updateTitle();
     }
 
@@ -406,8 +405,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             moveRadio(1);
             createRadioNotification(R.drawable.ic_pause);
         }
-        trackAdapter.setData(db.trackDao().getAll());
-        trackAdapter.notifyDataSetChanged();
+        changePlaying();
         updateTitle();
     }
 

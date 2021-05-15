@@ -293,6 +293,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
 
     @Override
     public void onTrackPrevious() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }
@@ -309,6 +310,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
 
     @Override
     public void onTrackNext() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }

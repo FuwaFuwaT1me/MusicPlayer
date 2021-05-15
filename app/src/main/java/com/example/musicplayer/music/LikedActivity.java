@@ -190,9 +190,9 @@ public class LikedActivity extends AppCompatActivity implements Playable {
                         play.setBackgroundResource(R.drawable.ic_pause);
                         player.setCurrentPlaylist(player.getPlaylistToView());
 
-                        List<Track> updatedTracks = getLikedTracks();
-
                         for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
+
+                        List<Track> updatedTracks = getLikedTracks();
 
                         for (Track track : updatedTracks) {
                             if (updatedTracks.get(position).getId() == track.getId()) {
@@ -305,6 +305,7 @@ public class LikedActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackPrevious() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }
@@ -321,6 +322,7 @@ public class LikedActivity extends AppCompatActivity implements Playable {
 
     @Override
     public void onTrackNext() {
+        changePlaying();
         updateTitle();
         play.setBackgroundResource(R.drawable.ic_pause);
     }

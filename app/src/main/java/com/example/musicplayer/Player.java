@@ -349,4 +349,25 @@ public class Player {
     public List<Track> getQueue() {
         return queue;
     }
+
+    public String updateTitle(String data) {
+        data = data.replace(".mp3", "").replace(".wav", "");
+        String title = "";
+        String text = "";
+        if (App.getApp().getPlayer().getSource().equals(".")) {
+            String[] info = data.replace("_", " ").split("-");
+            title = info[0];
+            if (info.length >= 2) {
+                for (int i = 1; i < info.length; i++) text += info[i];
+            }
+            if (text.indexOf(" ") == 0) text = text.substring(1);
+        }
+        else {
+            title = "Radio";
+            String temp = data;
+            if (text.split(" ").length >= 2) text = temp.substring(0, temp.lastIndexOf(" "));
+        }
+        String dash = text.isEmpty() ? "" : " - ";
+        return title + dash + text;
+    }
 }

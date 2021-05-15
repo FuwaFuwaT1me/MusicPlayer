@@ -253,7 +253,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         List<Track> liked = new ArrayList<>();
         List<Track> others = new ArrayList<>();
 
-        for (Track track : db.trackDao().getAll()) {
+        for (Track track : player.getQueue()) {
             if (track.isLiked()) liked.add(track);
             else others.add(track);
         }

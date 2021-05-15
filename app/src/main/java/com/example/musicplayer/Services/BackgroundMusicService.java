@@ -63,6 +63,10 @@ public class BackgroundMusicService extends Service {
                 else player.getMediaPlayer().seekTo(player.getMediaPlayerCurrentPosition());
                 isPlayedBefore = true;
             }
+            if (player.isSeekWhilePause()) {
+                player.getMediaPlayer().seekTo(player.getMediaPlayerCurrentPosition());
+                player.setSeekWhilePause(false);
+            }
         }
         player.setIsPlaying(true);
         player.getMediaPlayer().start();

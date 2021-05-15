@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class RadioActivity extends AppCompatActivity implements Playable {
+    private static final String DEBUG_TAG = "NetworkStatusExample";
     Player player;
     Button setRadioButton, backButton;
     EditText radioUrl, radioTitle;
@@ -203,6 +207,12 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            if (!hasConnection()) {
+                Toast.makeText(RadioActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             App.getApp().createLoadingDialog(RadioActivity.this);
             App.getApp().getLoadingDialog().startLoadingAnimation();
         }
@@ -228,13 +238,15 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            App.getApp().dismissLoading();
+            App.getApp().nullLoading();
             return null;
         }
 
         @Override
         protected void onPostExecute(String url) {
             if (url == null) {
-                Toast.makeText(RadioActivity.this, "Неверный URL", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RadioActivity.this, "Wrong URL", Toast.LENGTH_SHORT).show();
                 return;
             }
             player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
@@ -428,5 +440,22 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     protected void onDestroy() {
         super.onDestroy();
         running = false;
+    }
+
+    boolean hasConnection() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        boolean isWifiConn = false;
+        boolean isMobileConn = false;
+        for (Network network : connMgr.getAllNetworks()) {
+            NetworkInfo networkInfo = connMgr.getNetworkInfo(network);
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                isWifiConn |= networkInfo.isConnected();
+            }
+            if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                isMobileConn |= networkInfo.isConnected();
+            }
+        }
+        return isWifiConn || isMobileConn;
     }
 }

@@ -19,6 +19,7 @@ public class Player {
     private int playerId;
     private int mediaPlayerCurrentPosition = 0;
     private boolean wasSongSwitched;
+    private boolean seekWhilePause;
 
     private List<Track> queue = new ArrayList<>();
     private List<Integer> playlistIndexes = new ArrayList<>();
@@ -64,6 +65,14 @@ public class Player {
             playlistIndex = list.get(list.size() - 1).getId();
             incPlaylistIndex();
         }
+    }
+
+    public boolean isSeekWhilePause() {
+        return seekWhilePause;
+    }
+
+    public void setSeekWhilePause(boolean seekWhilePause) {
+        this.seekWhilePause = seekWhilePause;
     }
 
     public int getCurrentQueueTrack() {

@@ -2,6 +2,9 @@ package com.example.musicplayer.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,6 +66,11 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
         holder.info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!hasConnection()) {
+                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 if (player.getCurrentRadio() == position) return;
 
                 App.getApp().createLoadingDialog(activity);
@@ -131,5 +140,23 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
             this.info = view.findViewById(R.id.txtSongName);
             this.image = view.findViewById(R.id.imgSong);
         }
+    }
+
+    boolean hasConnection() {
+
+        ConnectivityManager connMgr =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        boolean isWifiConn = false;
+        boolean isMobileConn = false;
+        for (Network network : connMgr.getAllNetworks()) {
+            NetworkInfo networkInfo = connMgr.getNetworkInfo(network);
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                isWifiConn |= networkInfo.isConnected();
+            }
+            if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                isMobileConn |= networkInfo.isConnected();
+            }
+        }
+        return isWifiConn || isMobileConn;
     }
 }

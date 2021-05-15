@@ -194,7 +194,14 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 player.setIsAnotherSong(false);
-                player.getMediaPlayer().seekTo(seekBar.getProgress());
+                Log.d("testing", player.getMediaPlayer()+"");
+                player.setMediaPlayerCurrentPosition(seekBar.getProgress());
+                if (!player.isPlaying()) {
+                    player.setSeekWhilePause(true);
+                    player.setMediaPlayerCurrentPosition(seekBar.getProgress());
+                    startService(App.getApp().getPlayerService());
+                }
+                else player.getMediaPlayer().seekTo(seekBar.getProgress());
             }
         });
         repeat.setOnClickListener(new View.OnClickListener() {
@@ -324,6 +331,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     endTiming.setText(createTime(total));
                     seekBar.setMax(total);
                     seekBar.setProgress(current);
+                    updateButtons();
+                    updateTitle();
                 }
             } catch (Exception e) {
             }
@@ -411,6 +420,11 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
     void updateTitle() {
         songNameView.setText(player.getCurrentTitle());
+    }
+
+    void updateButtons() {
+        if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
+        else play.setBackgroundResource(R.drawable.ic_play);
     }
 
     void playNext() {

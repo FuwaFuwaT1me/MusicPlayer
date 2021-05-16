@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -23,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
@@ -47,6 +49,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     boolean running = true;
     NotificationManager notificationManager;
     AppDatabase db;
+    AppColor appColor;
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -68,6 +71,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     private void init() {
         db = App.getApp().getDb();
 
+        appColor = App.getApp().getAppColor();
+
         play = findViewById(R.id.play2);
         prev = findViewById(R.id.previous2);
         next = findViewById(R.id.next2);
@@ -86,6 +91,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         repeat = findViewById(R.id.repeat);
         shuffle = findViewById(R.id.shuffle);
 
+        back.setBackgroundResource(appColor.getBackColor());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
             registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
@@ -95,26 +102,27 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         int audioSessionId = player.getPlayerId();
         if (audioSessionId != -1) {
             visualizer.setAudioSessionId(audioSessionId);
+            visualizer.setColor(Color.parseColor(appColor.getColor()));
         }
 
         if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
+            play.setBackgroundResource(appColor.getPauseColor());
         } else {
-            play.setBackgroundResource(R.drawable.ic_play);
+            play.setBackgroundResource(appColor.getPlayColor());
         }
 
         if (!player.isRepeated()) {
             repeat.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
         }
         else {
-            repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+            repeat.setBackgroundTintList((getResources().getColorStateList(appColor.getColorCode())));
         }
 
         if (!player.isShuffled()) {
             shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.white)));
         }
         else {
-            shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+            shuffle.setBackgroundTintList((getResources().getColorStateList(appColor.getColorCode())));
         }
 
         play.setOnClickListener(new View.OnClickListener() {
@@ -125,13 +133,13 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     createTrackNotification();
 
                     player.setIsPlaying(false);
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(appColor.getPlayColor());
                     stopService(App.getApp().getPlayerService());
                 } else {
                     createTrackNotification();
 
                     player.setIsPlaying(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
+                    play.setBackgroundResource(appColor.getPauseColor());
                     startService(App.getApp().getPlayerService());
                 }
             }
@@ -148,7 +156,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
 
                     player.getMediaPlayer().seekTo(0);
                 }
-                play.setBackgroundResource(R.drawable.ic_pause);
+                play.setBackgroundResource(appColor.getPauseColor());
                 createTrackNotification();
             }
         });
@@ -210,7 +218,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             public void onClick(View v) {
                 if (!player.isRepeated()) {
                     player.setIsRepeated(true);
-                    repeat.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+                    repeat.setBackgroundTintList((getResources().getColorStateList(appColor.getColorCode())));
                 }
                 else {
                     player.setIsRepeated(false);
@@ -226,7 +234,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             public void onClick(View v) {
                 if (!player.isShuffled()) {
                     player.setIsShuffled(true);
-                    shuffle.setBackgroundTintList((getResources().getColorStateList(R.color.button_tint_color)));
+                    shuffle.setBackgroundTintList((getResources().getColorStateList(appColor.getColorCode())));
                     shuffleQueue();
                 }
                 else {
@@ -240,8 +248,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         seekBar.setMax(player.getCurrentDuration());
         seekBar.setProgress(player.getMediaPlayerCurrentPosition());
         seekBarThread.start();
-        seekBar.getProgressDrawable().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.MULTIPLY);
-        seekBar.getThumb().setColorFilter(getResources().getColor(R.color.primeColor), PorterDuff.Mode.SRC_IN);
+        seekBar.getProgressDrawable().setColorFilter(Color.parseColor(appColor.getColor()), PorterDuff.Mode.MULTIPLY);
+        seekBar.getThumb().setColorFilter(Color.parseColor(appColor.getColor()), PorterDuff.Mode.SRC_IN);
     }
 
     private void returnQueueToNormal() {
@@ -295,7 +303,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         player.setIsAnotherSong(true);
         updateTitle();
         startService(App.getApp().getPlayerService());
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
 
         for (Track track : db.trackDao().getAll()) {
             db.trackDao().updatePlaying(track.getId(), false);
@@ -382,29 +390,29 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     @Override
     public void onTrackPrevious() {
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPlay() {
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPause() {
-        play.setBackgroundResource(R.drawable.ic_play);
+        play.setBackgroundResource(appColor.getPlayColor());
     }
 
     @Override
     public void onTrackNext() {
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     void createTrackNotification() {
         CreateNotification.createNotification(getApplicationContext(),
                 player.getCurrentTrack(),
-                R.drawable.ic_pause,
+                appColor.getPauseColor(),
                 player.getCurrentQueueTrack(),
                 player.getQueueSize()-1);
     }
@@ -423,8 +431,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
     }
 
     void updateButtons() {
-        if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
-        else play.setBackgroundResource(R.drawable.ic_play);
+        if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
+        else play.setBackgroundResource(appColor.getPlayColor());
     }
 
     void playNext() {
@@ -439,7 +447,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             stopService(App.getApp().getPlayerService());
         }
 
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
         createTrackNotification();
     }
 

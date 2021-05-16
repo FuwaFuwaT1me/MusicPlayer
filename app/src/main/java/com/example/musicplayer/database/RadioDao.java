@@ -18,6 +18,9 @@ public interface RadioDao {
     @Query("SELECT * FROM Radio WHERE id = :id")
     Radio getById(int id);
 
+    @Query("DELETE FROM Radio")
+    void deleteAll();
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Radio radio);
 

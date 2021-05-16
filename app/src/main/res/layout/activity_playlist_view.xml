@@ -9,7 +9,7 @@
     <Button
         android:id="@+id/playlistTracksBack"
         android:layout_width="50dp"
-        android:background="@drawable/ic_back"
+        android:background="@drawable/ic_back_red"
         android:layout_height="50dp"
         android:layout_marginLeft="10dp"
         android:layout_alignParentLeft="true"/>

@@ -1,19 +1,22 @@
 package com.example.musicplayer.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.AppDatabase;
@@ -30,6 +33,7 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
     Context context;
     Player player;
     AppDatabase db;
+    AppColor appColor;
 
     public TrackAdapterSelect(Context context) {
         this.context = context;
@@ -46,17 +50,22 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
     @NonNull
     @Override
     public TrackAdapterSelect.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        appColor = App.getApp().getAppColor();
+
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_select, parent, false);
         holder = new TrackAdapterSelect.ViewHolder(view);
         return holder;
     }
 
+    @SuppressLint({"UseCompatLoadingForColorStateLists", "NewApi"})
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.info.setText(list.get(position).getName());
         holder.info.setSelected(true);
-        if (list.get(position).isPlaying()) holder.image.setImageResource(R.drawable.ic_play);
+
+        if (list.get(position).isPlaying()) holder.image.setImageResource(appColor.getPlayColor());
         else holder.image.setImageResource(R.drawable.ic_music);
+
         holder.box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -81,7 +90,7 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
                 player.setIsAnotherSong(true);
                 player.setSource(".");
                 context.startService(App.getApp().getPlayerService());
-                createTrackNotification(R.drawable.ic_pause);
+                createTrackNotification(appColor.getPauseColor());
 
                 for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
 
@@ -102,6 +111,10 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
         });
         holder.box.setTag(list.get(position));
         holder.box.setChecked(player.getSelected().contains(position));
+
+        holder.image.setBackgroundResource(appColor.getBgColor());
+        holder.box.setButtonTintList(context.getResources().getColorStateList(appColor.getColorCode()));
+        holder.layout.setBackgroundResource(appColor.getBgColor());
     }
 
     @Override
@@ -121,12 +134,14 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
         TextView info;
         CheckBox box;
         ImageView image;
+        RelativeLayout layout;
 
         ViewHolder(View view) {
             super(view);
             this.info = view.findViewById(R.id.txtSongName);
             this.box = view.findViewById(R.id.checkbox);
             this.image = view.findViewById(R.id.imgSong);
+            this.layout = view.findViewById(R.id.createLayout);
         }
     }
 }

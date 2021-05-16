@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="primeColor">#FF362E</color>
+    <color name="primeColorGreen">#33cc33</color>
+    <color name="primeColorBlue">#00ffff</color>
 </resources>

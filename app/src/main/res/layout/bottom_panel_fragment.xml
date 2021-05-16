@@ -9,9 +9,10 @@
     android:background="@color/black">
 
     <RelativeLayout
+        android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/list_bg">
+        android:background="@drawable/list_bg_red">
 
         <TextView
             android:id="@+id/songName"
@@ -36,16 +37,16 @@
             android:id="@+id/previous"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_toLeftOf="@id/play"
+            android:layout_toLeftOf="@id/playBottom"
             android:background="@drawable/ic_previous"
-            android:layout_toStartOf="@id/play" />
+            android:layout_toStartOf="@id/playBottom" />
 
         <Button
-            android:id="@+id/play"
+            android:id="@+id/playBottom"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_toLeftOf="@id/next"
-            android:background="@drawable/ic_play"
+            android:background="@drawable/ic_play_red"
             android:layout_toStartOf="@id/next" />
 
         <Button

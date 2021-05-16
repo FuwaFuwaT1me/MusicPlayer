@@ -9,7 +9,7 @@
     <Button
         android:id="@+id/addingBack"
         android:layout_width="50dp"
-        android:background="@drawable/ic_back"
+        android:background="@drawable/ic_back_red"
         android:layout_height="50dp"
         android:layout_marginLeft="10dp"
         android:layout_alignParentLeft="true"/>
@@ -23,7 +23,7 @@
         android:layout_margin="10dp"
         android:minHeight="30dp"
         android:maxHeight="30dp"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:layout_height="wrap_content"/>
@@ -32,10 +32,10 @@
         android:id="@+id/createPlaylist"
         android:layout_below="@+id/playlistNameET"
         android:layout_centerInParent="true"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:text="Create playlist"
         android:textColor="@color/white"
-        android:padding="5dp"
+        android:padding="10dp"
         android:textStyle="italic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>

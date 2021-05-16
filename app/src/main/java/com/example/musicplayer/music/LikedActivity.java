@@ -9,10 +9,10 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.RecyclerItemClickListener;
@@ -29,7 +30,6 @@ import com.example.musicplayer.adapter.TrackAdapter;
 import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.Radio;
 import com.example.musicplayer.database.Track;
-import com.example.musicplayer.database.TrackPlaylist;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 
@@ -47,6 +47,8 @@ public class LikedActivity extends AppCompatActivity implements Playable {
     TextView title;
     NotificationManager notificationManager;
     boolean running = false;
+    AppColor appColor;
+    RelativeLayout layout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,9 +67,9 @@ public class LikedActivity extends AppCompatActivity implements Playable {
         App.getApp().setCurrentActivity(this);
 
         if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
+            play.setBackgroundResource(appColor.getPauseColor());
         } else {
-            play.setBackgroundResource(R.drawable.ic_play);
+            play.setBackgroundResource(appColor.getPlayColor());
         }
 
         updateTitle();
@@ -83,13 +85,19 @@ public class LikedActivity extends AppCompatActivity implements Playable {
         playlistName = findViewById(R.id.playlistName);
         tracks = findViewById(R.id.likedSongs);
         back = findViewById(R.id.playlistTracksBack);
-        play = findViewById(R.id.play);
+        play = findViewById(R.id.playBottom);
         title = findViewById(R.id.songName);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        layout = findViewById(R.id.bottomLayout);
         title.setSelected(true);
 
         db = App.getApp().getDb();
+
+        appColor = App.getApp().getAppColor();
+
+        back.setBackgroundResource(appColor.getBackColor());
+        layout.setBackgroundResource(appColor.getBgColor());
 
         adapter = new TrackAdapter();
         adapter.setData(getLikedTracks());
@@ -108,26 +116,26 @@ public class LikedActivity extends AppCompatActivity implements Playable {
             public void onClick(View v) {
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_play);
+                        createTrackNotification(R.drawable.ic_play_red);
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_play);
+                        createRadioNotification(R.drawable.ic_play_red);
                     }
 
                     player.setIsPlaying(false);
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(R.drawable.ic_play_red);
                     stopService(App.getApp().getPlayerService());
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_pause);
+                        createTrackNotification(R.drawable.ic_pause_red);
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_pause);
+                        createRadioNotification(R.drawable.ic_pause_red);
                     }
 
                     player.setIsPlaying(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
+                    play.setBackgroundResource(R.drawable.ic_pause_red);
                     startService(App.getApp().getPlayerService());
                 }
                 player.setIsAnotherSong(false);
@@ -140,11 +148,11 @@ public class LikedActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(R.drawable.ic_pause_red);
                 }
                 changePlaying();
             }
@@ -156,11 +164,11 @@ public class LikedActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(R.drawable.ic_pause_red);
                 }
                 changePlaying();
             }
@@ -186,8 +194,8 @@ public class LikedActivity extends AppCompatActivity implements Playable {
                         player.setIsAnotherSong(true);
                         player.setSource(".");
                         startService(App.getApp().getPlayerService());
-                        createTrackNotification(R.drawable.ic_pause);
-                        play.setBackgroundResource(R.drawable.ic_pause);
+                        createTrackNotification(R.drawable.ic_pause_red);
+                        play.setBackgroundResource(R.drawable.ic_pause_red);
                         player.setCurrentPlaylist(player.getPlaylistToView());
 
                         for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
@@ -307,24 +315,24 @@ public class LikedActivity extends AppCompatActivity implements Playable {
     public void onTrackPrevious() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     @Override
     public void onTrackPlay() {
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     @Override
     public void onTrackPause() {
-        play.setBackgroundResource(R.drawable.ic_play);
+        play.setBackgroundResource(R.drawable.ic_play_red);
     }
 
     @Override
     public void onTrackNext() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     private void startTitleThread() {
@@ -342,8 +350,7 @@ public class LikedActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
                             updateTitle();
-                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
-                            else play.setBackgroundResource(R.drawable.ic_play);
+                            changePlayButton();
                         }
                     });
                 }
@@ -365,5 +372,10 @@ public class LikedActivity extends AppCompatActivity implements Playable {
         }
         adapter.setData(getLikedTracks());
         adapter.notifyDataSetChanged();
+    }
+
+    void changePlayButton() {
+        if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
+        else play.setBackgroundResource(appColor.getPlayColor());
     }
 }

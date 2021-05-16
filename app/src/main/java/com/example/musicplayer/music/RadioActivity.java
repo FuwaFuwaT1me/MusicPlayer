@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -18,10 +19,9 @@ import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,11 +32,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
-import com.example.musicplayer.LoadingDialog;
-import com.example.musicplayer.MainActivity;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
-import com.example.musicplayer.RecyclerItemClickListener;
 import com.example.musicplayer.Services.OnClearFromRecentService;
 import com.example.musicplayer.adapter.RadioAdapter;
 import com.example.musicplayer.database.AppDatabase;
@@ -62,6 +60,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     boolean running = false;
     public static int radioToRemove;
     AppDatabase db;
+    AppColor appColor;
+    RelativeLayout layout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,9 +78,9 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         App.getApp().setCurrentActivity(this);
 
         if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
+            play.setBackgroundResource(appColor.getPauseColor());
         } else {
-            play.setBackgroundResource(R.drawable.ic_play);
+            play.setBackgroundResource(appColor.getPlayColor());
         }
 
         if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
@@ -103,13 +103,22 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         radioList = findViewById(R.id.radioList);
         backButton = findViewById(R.id.backButton);
         radioTitle = findViewById(R.id.radioTitle);
-        play = findViewById(R.id.play);
+        play = findViewById(R.id.playBottom);
         title = findViewById(R.id.songName);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        layout = findViewById(R.id.bottomLayout);
         title.setSelected(true);
 
         db = App.getApp().getDb();
+
+        appColor = App.getApp().getAppColor();
+
+        backButton.setBackgroundResource(appColor.getBackColor());
+        radioTitle.setBackgroundResource(appColor.getBgColor());
+        radioUrl.setBackgroundResource(appColor.getBgColor());
+        setRadioButton.setBackgroundResource(appColor.getBgColor());
+        layout.setBackgroundResource(appColor.getBgColor());
 
         adapter = new RadioAdapter(RadioActivity.this, this);
         adapter.setData(db.radioDao().getAll());
@@ -136,26 +145,26 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 if (player.getMediaPlayer() == null) return;
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_play);
+                        createTrackNotification(appColor.getPlayColor());
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_play);
+                        createRadioNotification(appColor.getPlayColor());
                     }
 
                     player.setIsPlaying(false);
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(appColor.getPlayColor());
                     stopService(App.getApp().getPlayerService());
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_pause);
+                        createTrackNotification(appColor.getPauseColor());
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_pause);
+                        createRadioNotification(appColor.getPauseColor());
                     }
 
                     player.setIsPlaying(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
+                    play.setBackgroundResource(appColor.getPauseColor());
                     startService(App.getApp().getPlayerService());
                 }
                 player.setIsAnotherSong(false);
@@ -168,11 +177,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -184,11 +193,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -347,7 +356,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             if (player.getCurrentRadio() >= 1) {
                 if (player.getCurrentRadio() == radioToRemove) {
                     stopService(App.getApp().getPlayerService());
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(appColor.getPlayColor());
                     player.setSource(".");
                     player.setCurrentRadio(-1);
                 }
@@ -355,7 +364,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             }
             else {
                 stopService(App.getApp().getPlayerService());
-                play.setBackgroundResource(R.drawable.ic_play);
+                play.setBackgroundResource(appColor.getPlayColor());
                 player.setSource(".");
             }
 
@@ -395,24 +404,24 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     public void onTrackPrevious() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPlay() {
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPause() {
-        play.setBackgroundResource(R.drawable.ic_play);
+        play.setBackgroundResource(appColor.getPlayColor());
     }
 
     @Override
     public void onTrackNext() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     private void startTitleThread() {
@@ -430,8 +439,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
                             updateTitle();
-                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
-                            else play.setBackgroundResource(R.drawable.ic_play);
+                            changePlayButton();
                         }
                     });
                 }
@@ -470,5 +478,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         }
         adapter.setData(db.radioDao().getAll());
         adapter.notifyDataSetChanged();
+    }
+
+    void changePlayButton() {
+        if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
+        else play.setBackgroundResource(appColor.getPlayColor());
     }
 }

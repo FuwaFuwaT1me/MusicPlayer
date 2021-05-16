@@ -9,14 +9,14 @@
     <Button
         android:id="@+id/backButton"
         android:layout_margin="10dp"
-        android:background="@drawable/ic_back"
+        android:background="@drawable/ic_back_red"
         android:layout_width="50dp"
         android:layout_height="50dp"/>
 
 
     <EditText
         android:layout_below="@+id/backButton"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:hint="Radio name"
         android:textColorHint="@color/white"
         android:minHeight="30dp"
@@ -34,7 +34,7 @@
     <EditText
         android:layout_below="@+id/radioTitle"
         android:layout_marginTop="20dp"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:paddingLeft="5dp"
@@ -55,7 +55,7 @@
         android:text="Set radio"
         android:textStyle="italic"
         android:padding="5dp"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:layout_below="@+id/radioUrl"
         android:layout_centerInParent="true"
         android:layout_width="wrap_content"

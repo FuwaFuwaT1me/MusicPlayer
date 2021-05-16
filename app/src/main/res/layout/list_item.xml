@@ -10,8 +10,9 @@
     android:id="@+id/myItem">
 
     <RelativeLayout
+        android:id="@+id/trackLayout"
         android:padding="8dp"
-        android:background="@drawable/list_bg"
+        android:background="@drawable/list_bg_red"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -21,7 +22,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginStart="5dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/list_bg"
+            android:background="@drawable/list_bg_red"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentLeft="true"

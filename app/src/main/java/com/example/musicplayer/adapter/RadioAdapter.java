@@ -9,8 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.AppDatabase;
@@ -36,6 +37,7 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
     Context context;
     Player player;
     AppDatabase db;
+    AppColor appColor;
 
     public RadioAdapter(Activity activity, Context context) {
         this.activity = activity;
@@ -54,6 +56,8 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        appColor = App.getApp().getAppColor();
+
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
         RadioAdapter.ViewHolder holder = new RadioAdapter.ViewHolder(view);
         return holder;
@@ -87,7 +91,7 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
                 }
 
                 context.startService(App.getApp().getPlayerService());
-                createRadioNotification(R.drawable.ic_pause);
+                createRadioNotification(R.drawable.ic_pause_red);
                 for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
 
                 for (Radio radio : db.radioDao().getAll()) {
@@ -109,8 +113,10 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
             }
         });
 
-        if (data.get(position).isPlaying()) holder.image.setImageResource(R.drawable.ic_play);
+        if (data.get(position).isPlaying()) holder.image.setImageResource(appColor.getPlayColor());
         else holder.image.setImageResource(R.drawable.ic_music);
+        holder.layout.setBackgroundResource(appColor.getBgColor());
+        holder.image.setBackgroundResource(appColor.getBgColor());
     }
 
     void createRadioNotification(int index) {
@@ -134,11 +140,13 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView info;
         ImageView image;
+        RelativeLayout layout;
 
         ViewHolder(View view) {
             super(view);
             this.info = view.findViewById(R.id.txtSongName);
             this.image = view.findViewById(R.id.imgSong);
+            this.layout = view.findViewById(R.id.trackLayout);
         }
     }
 

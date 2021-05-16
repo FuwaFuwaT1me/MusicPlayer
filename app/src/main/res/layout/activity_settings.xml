@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    tools:context=".SettingsActivity">
+
+    <Button
+        android:id="@+id/settingsBack"
+        android:layout_margin="10dp"
+        android:background="@drawable/ic_back_red"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <TextView
+        android:layout_below="@+id/settingsBack"
+        android:id="@+id/colorSchemeTextView"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:text="App scheme color selection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <fragment
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/colorSchemeTextView"
+        android:id="@+id/colorFragment"
+        android:name="com.example.musicplayer.ColorSelectionFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragment_color_selection"/>
+
+    <TextView
+        android:id="@+id/clearAllTextView"
+        android:textColor="@color/white"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/colorFragment"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="Clear all data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <fragment
+        android:id="@+id/clearFragment"
+        android:name="com.example.musicplayer.ClearAllFragment"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        tools:layout="@layout/fragment_clear_all"
+        android:layout_below="@+id/clearAllTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

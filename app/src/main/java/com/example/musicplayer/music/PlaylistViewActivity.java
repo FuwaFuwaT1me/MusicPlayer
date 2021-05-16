@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.RecyclerItemClickListener;
@@ -47,6 +49,8 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     TextView title;
     NotificationManager notificationManager;
     boolean running = false;
+    AppColor appColor;
+    RelativeLayout layout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,13 +66,13 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
 
         init();
 
-        App.getApp().setCurrentActivity(this);
-
         if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
+            play.setBackgroundResource(appColor.getPauseColor());
         } else {
-            play.setBackgroundResource(R.drawable.ic_play);
+            play.setBackgroundResource(appColor.getPlayColor());
         }
+
+        App.getApp().setCurrentActivity(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
@@ -81,13 +85,20 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
         playlistName = findViewById(R.id.playlistName);
         tracks = findViewById(R.id.playlistTracks);
         back = findViewById(R.id.playlistTracksBack);
-        play = findViewById(R.id.play);
+        play = findViewById(R.id.playBottom);
         title = findViewById(R.id.songName);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        layout = findViewById(R.id.bottomLayout);
         title.setSelected(true);
 
         db = App.getApp().getDb();
+
+        appColor = App.getApp().getAppColor();
+
+        layout.setBackgroundResource(appColor.getBgColor());
+        back.setBackgroundResource(appColor.getBackColor());
+
 
         for (Track track : getPlaylistTracks(player.getPlaylistToView())) {
             Log.d("testing", track.getId()+"");
@@ -133,8 +144,8 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                         player.setIsAnotherSong(true);
                         player.setSource(".");
                         startService(App.getApp().getPlayerService());
-                        createTrackNotification(R.drawable.ic_pause);
-                        play.setBackgroundResource(R.drawable.ic_pause);
+                        createTrackNotification(appColor.getPauseColor());
+                        play.setBackgroundResource(appColor.getPauseColor());
                         player.setCurrentPlaylist(player.getPlaylistToView());
 
                         for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
@@ -164,26 +175,26 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
             public void onClick(View v) {
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_play);
+                        createTrackNotification(appColor.getPlayColor());
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_play);
+                        createRadioNotification(appColor.getPlayColor());
                     }
 
                     player.setIsPlaying(false);
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(appColor.getPlayColor());
                     stopService(App.getApp().getPlayerService());
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_pause);
+                        createTrackNotification(appColor.getPauseColor());
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_pause);
+                        createRadioNotification(appColor.getPauseColor());
                     }
 
                     player.setIsPlaying(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
+                    play.setBackgroundResource(appColor.getPauseColor());
                     startService(App.getApp().getPlayerService());
                 }
                 player.setIsAnotherSong(false);
@@ -195,11 +206,11 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 if (player.getMediaPlayer() == null) return;
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -210,11 +221,11 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 if (player.getMediaPlayer() == null) return;
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -323,24 +334,24 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     public void onTrackPrevious() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPlay() {
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     @Override
     public void onTrackPause() {
-        play.setBackgroundResource(R.drawable.ic_play);
+        play.setBackgroundResource(appColor.getPlayColor());
     }
 
     @Override
     public void onTrackNext() {
         changePlaying();
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(appColor.getPauseColor());
     }
 
     private void startTitleThread() {
@@ -356,8 +367,12 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                     }
                     handler.post(new Runnable(){
                         public void run() {
-                            if (player.getMediaPlayer() == null) return;
+                            if (player.getMediaPlayer() == null) {
+                                play.setBackgroundResource(appColor.getPlayColor());
+                                return;
+                            }
                             updateTitle();
+                            changePlayButton();
                         }
                     });
                 }
@@ -379,5 +394,10 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
         }
         adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
         adapter.notifyDataSetChanged();
+    }
+
+    void changePlayButton() {
+        if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
+        else play.setBackgroundResource(appColor.getPlayColor());
     }
 }

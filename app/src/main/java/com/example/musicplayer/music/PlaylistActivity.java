@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,6 +16,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.musicplayer.App;
+import com.example.musicplayer.AppColor;
 import com.example.musicplayer.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.OnClearFromRecentService;
@@ -47,6 +48,8 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
     NotificationManager notificationManager;
     Player player;
     boolean running = false;
+    AppColor appColor;
+    RelativeLayout layout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,12 +63,6 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         }
 
         init();
-
-        if (player.isPlaying()) {
-            play.setBackgroundResource(R.drawable.ic_pause);
-        } else {
-            play.setBackgroundResource(R.drawable.ic_play);
-        }
 
         if (!player.getSource().equals(".") && player.getCurrentRadio() != -1) {
             title.setText(player.getCurrentRadioTrack().getName());
@@ -85,13 +82,18 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         back = findViewById(R.id.playlistBackButton);
         add = findViewById(R.id.addPlaylistButton);
         playlists = findViewById(R.id.playlists);
-        play = findViewById(R.id.play);
+        play = findViewById(R.id.playBottom);
         title = findViewById(R.id.songName);
         prev = findViewById(R.id.previous);
         next = findViewById(R.id.next);
+        layout = findViewById(R.id.bottomLayout);
         title.setSelected(true);
 
         db = App.getApp().getDb();
+
+        appColor = App.getApp().getAppColor();
+        back.setBackgroundResource(appColor.getBackColor());
+        add.setBackgroundResource(appColor.getAddColor());
 
         adapter = new PlaylistAdapter();
         adapter.setData(db.playlistDao().getAll());
@@ -132,26 +134,26 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
                 if (player.getMediaPlayer() == null) return;
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_play);
+                        createTrackNotification(R.drawable.ic_play_red);
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_play);
+                        createRadioNotification(R.drawable.ic_play_red);
                     }
 
                     player.setIsPlaying(false);
-                    play.setBackgroundResource(R.drawable.ic_play);
+                    play.setBackgroundResource(R.drawable.ic_play_red);
                     stopService(App.getApp().getPlayerService());
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_pause);
+                        createTrackNotification(R.drawable.ic_pause_red);
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_pause);
+                        createRadioNotification(R.drawable.ic_pause_red);
                     }
 
                     player.setIsPlaying(true);
-                    play.setBackgroundResource(R.drawable.ic_pause);
+                    play.setBackgroundResource(R.drawable.ic_pause_red);
                     startService(App.getApp().getPlayerService());
                 }
                 player.setIsAnotherSong(false);
@@ -164,11 +166,11 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(R.drawable.ic_pause_red);
                 }
             }
         });
@@ -179,11 +181,11 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(R.drawable.ic_pause);
+                    createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(R.drawable.ic_pause);
+                    createRadioNotification(R.drawable.ic_pause_red);
                 }
             }
         });
@@ -233,7 +235,7 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
                 player.clearQueue();
                 for (Track track : db.trackDao().getAll()) player.addToQueue(track);
                 startService(App.getApp().getPlayerService());
-                createTrackNotification(R.drawable.ic_pause);
+                createTrackNotification(R.drawable.ic_pause_red);
             }
 
             db.playlistDao().delete(player.getPlaylistIndexById(selectedPlaylist));
@@ -249,6 +251,16 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         super.onResume();
         adapter.setData(db.playlistDao().getAll());
         adapter.notifyDataSetChanged();
+
+        layout.setBackgroundResource(appColor.getBgColor());
+
+        if (player.isPlaying()) {
+            play.setBackgroundResource(appColor.getPauseColor());
+        } else {
+            play.setBackgroundResource(appColor.getPlayColor());
+        }
+
+        player.clearSelected();
 
         App.getApp().setCurrentActivity(this);
     }
@@ -321,23 +333,23 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
     @Override
     public void onTrackPrevious() {
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     @Override
     public void onTrackPlay() {
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     @Override
     public void onTrackPause() {
-        play.setBackgroundResource(R.drawable.ic_play);
+        play.setBackgroundResource(R.drawable.ic_play_red);
     }
 
     @Override
     public void onTrackNext() {
         updateTitle();
-        play.setBackgroundResource(R.drawable.ic_pause);
+        play.setBackgroundResource(R.drawable.ic_pause_red);
     }
 
     private void startTitleThread() {
@@ -355,8 +367,7 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
                             updateTitle();
-                            if (player.isPlaying()) play.setBackgroundResource(R.drawable.ic_pause);
-                            else play.setBackgroundResource(R.drawable.ic_play);
+                            changePlayButton();
                         }
                     });
                 }
@@ -369,5 +380,10 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
     protected void onDestroy() {
         super.onDestroy();
         running = false;
+    }
+
+    void changePlayButton() {
+        if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
+        else play.setBackgroundResource(appColor.getPlayColor());
     }
 }

@@ -4,48 +4,44 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:allowBackup="true"
-        android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:name=".App"
+        android:allowBackup="true"
+        android:icon="@drawable/songimage"
+        android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/MusicPlayer">
+        android:theme="@style/MusicPlayer"
+        android:usesCleartextTraffic="true">
+
+        <activity android:name=".SettingsActivity"
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.RadioActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/MusicPlayer">
-        </activity>
-
+            android:theme="@style/MusicPlayer"></activity>
         <activity
             android:name=".music.SongActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
-
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.PlaylistActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
-
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.CreatingPlaylistActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
-
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.PlaylistViewActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
-
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.LikedActivity"
-            android:theme="@style/Theme.MusicPlayer.NoActionBar"/>
-
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".HomeActivity"
             android:theme="@style/Splash">
@@ -57,6 +53,7 @@
         </activity>
 
         <receiver android:name=".Services.NotificationActionService" />
+
         <service android:name=".Services.OnClearFromRecentService" />
         <service android:name=".Services.BackgroundMusicService" />
     </application>

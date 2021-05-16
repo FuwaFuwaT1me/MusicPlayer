@@ -26,6 +26,7 @@ public class App extends Application {
     private AppDatabase db;
     private LoadingDialog loading;
     private Activity currentActivity;
+    private AppColor appColor;
 
     public void setPlayerService(Intent playerService) {
         this.playerService = playerService;
@@ -39,6 +40,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         uniqueInstance = this;
+        appColor = new AppColor();
+        appColor.setRed();
     }
 
     public static App getApp() {
@@ -60,6 +63,10 @@ public class App extends Application {
             player = new Player();
         }
         return player;
+    }
+
+    public AppColor getAppColor() {
+        return appColor;
     }
 
     //Loading circle

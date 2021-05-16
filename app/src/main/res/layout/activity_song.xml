@@ -13,7 +13,7 @@
         android:id="@+id/back"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/ic_back"
+        android:background="@drawable/ic_back_red"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="8dp" />
@@ -99,7 +99,7 @@
             <Button
                 android:id="@+id/play2"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/ic_play"
+                android:background="@drawable/ic_play_red"
                 android:layout_width="70dp"
                 android:layout_height="70dp"/>
 
@@ -168,7 +168,7 @@
                 custom:avDensity="0.5"
                 custom:avType="outline"
                 custom:avWidth="4dp"
-                custom:avColor="#FF362E"
+                custom:avColor="@color/primeColor"
                 custom:avSpeed="normal"/>
 
         </RelativeLayout>

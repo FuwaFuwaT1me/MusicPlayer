@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <Button
+        android:id="@+id/addingBack"
+        android:layout_width="50dp"
+        android:background="@drawable/ic_back_red"
+        android:layout_height="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentLeft="true"/>
+
+    <Button
+        android:id="@+id/addSongsToExistingPlaylist"
+        android:layout_below="@id/addingBack"
+        android:layout_centerInParent="true"
+        android:background="@drawable/list_bg_red"
+        android:text="@string/add"
+        android:textColor="@color/white"
+        android:padding="10dp"
+        android:textStyle="italic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_below="@id/addSongsToExistingPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/addingTracks"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10.0sp"
+            android:padding="8dp"
+            android:layout_weight="1"
+            tools:listitem="@layout/list_item_select"/>
+
+        <fragment class="com.example.musicplayer.BottomFragment"
+            android:id="@+id/bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/bottom_panel_fragment" />
+
+    </LinearLayout>
+
+</RelativeLayout>

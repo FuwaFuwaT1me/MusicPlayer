@@ -72,10 +72,14 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
                 Track track = (Track) holder.box.getTag();
                 track.setSelected(buttonView.isChecked());
                 if (buttonView.isChecked()) {
-                    if (!player.getSelected().contains(position)) player.addSelected(track.getId());
+                    if (!player.getSelected().contains(position)) {
+                        player.addSelected(track.getId());
+                        db.trackDao().updateSelected(track.getId(), true);
+                    }
                 }
                 else {
                     player.removeSelected(track.getId());
+                    db.trackDao().updateSelected(track.getId(), false);
                 }
             }
         });

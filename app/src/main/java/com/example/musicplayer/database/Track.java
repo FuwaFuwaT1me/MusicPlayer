@@ -13,7 +13,6 @@ public class Track {
 
     private String path;
 
-    @Ignore
     private boolean selected;
 
     private boolean playing;

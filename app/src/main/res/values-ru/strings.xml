@@ -19,4 +19,6 @@
     <string name="noConnection" translatable="false">Нет интернет подключения</string>
     <string name="wrongURL" translatable="false">Неверная ссылка</string>
     <string name="set_radio">Установить радио</string>
+    <string name="add">Добавить</string>
+    <string name="noSongs">Ваши композиции будут отображены здесь</string>
 </resources>

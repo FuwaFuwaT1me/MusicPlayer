@@ -163,7 +163,7 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                     play.setBackgroundResource(R.drawable.ic_play_red);
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    if (player.getMediaPlayer() == null) player.getCurrentQueueTrack();
+                    if (player.getMediaPlayer() == null) return;
                     if (player.getSource().equals(".")) {
                         createTrackNotification(R.drawable.ic_pause_red);
                     }

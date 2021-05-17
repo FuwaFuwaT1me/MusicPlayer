@@ -17,8 +17,10 @@
         android:supportsRtl="true"
         android:theme="@style/MusicPlayer"
         android:usesCleartextTraffic="true">
-
-        <activity android:name=".SettingsActivity"
+        <activity android:name=".music.AddSongsActivity"
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
+        <activity
+            android:name=".SettingsActivity"
             android:theme="@style/Theme.MusicPlayer.NoActionBar" />
         <activity
             android:name=".music.RadioActivity"
@@ -26,7 +28,7 @@
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/MusicPlayer"></activity>
+            android:theme="@style/MusicPlayer" />
         <activity
             android:name=".music.SongActivity"
             android:theme="@style/Theme.MusicPlayer.NoActionBar" />

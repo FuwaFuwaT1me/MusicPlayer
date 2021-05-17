@@ -21,4 +21,6 @@
     <string name="noConnection" translatable="false">No internet connection</string>
     <string name="wrongURL" translatable="false">Wrong URL</string>
     <string name="set_radio">Set radio</string>
+    <string name="add">Add</string>
+    <string name="noSongs">Your songs will display here</string>
 </resources>

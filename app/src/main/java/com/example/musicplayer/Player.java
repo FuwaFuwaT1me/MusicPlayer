@@ -46,11 +46,13 @@ public class Player {
     public Player() {
         db = App.getApp().getDb();
 
-        db.radioDao().insert(new Radio(radioIndex++, "Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
-        db.radioDao().insert(new Radio(radioIndex++, "Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
-        db.radioDao().insert(new Radio(radioIndex++, "Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
-        db.radioDao().insert(new Radio(radioIndex++, "Rock radio", "http://galnet.ru:8000/hard"));
-        db.radioDao().insert(new Radio(radioIndex++, "Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+        if (db.radioDao().getAll().isEmpty()) {
+            db.radioDao().insert(new Radio(radioIndex++, "Chill-out radio", "http://air.radiorecord.ru:8102/chil_320"));
+            db.radioDao().insert(new Radio(radioIndex++, "Pop radio", "http://ice-the.musicradio.com/CapitalXTRANationalMP3"));
+            db.radioDao().insert(new Radio(radioIndex++, "Anime radio", "http://pool.anison.fm:9000/AniSonFM(320)?nocache=0.98"));
+            db.radioDao().insert(new Radio(radioIndex++, "Rock radio", "http://galnet.ru:8000/hard"));
+            db.radioDao().insert(new Radio(radioIndex++, "Dubstep radio", "http://air.radiorecord.ru:8102/dub_320"));
+        }
 
         for (Radio radio : db.radioDao().getAll()) {
             radioIndexes.add(radio.getId());

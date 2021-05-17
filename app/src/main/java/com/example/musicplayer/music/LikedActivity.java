@@ -243,7 +243,6 @@ public class LikedActivity extends AppCompatActivity implements Playable {
         for (Track track : db.trackDao().getAll()) {
             if (track.isLiked()) {
                 trackList.add(track);
-                Log.d("testing", track.getName() + " " + track.isPlaying());
             }
         }
 

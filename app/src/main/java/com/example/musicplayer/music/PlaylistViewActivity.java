@@ -190,6 +190,8 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                         createTrackNotification(appColor.getPauseColor());
                     }
                     else {
+                        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+                        App.getApp().getLoadingDialog().startLoadingAnimation();
                         createRadioNotification(appColor.getPauseColor());
                     }
 
@@ -388,12 +390,15 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     }
 
     void changePlaying() {
-        for (Track track : db.trackDao().getAll()) {
-            db.trackDao().updatePlaying(track.getId(), false);
-            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        if (player.getSource().equals(".")) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+                if (track.getId() == player.getCurrentTrack().getId())
+                    db.trackDao().updatePlaying(track.getId(), true);
+            }
+            adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
+            adapter.notifyDataSetChanged();
         }
-        adapter.setData(getPlaylistTracks(player.getPlaylistToView()));
-        adapter.notifyDataSetChanged();
     }
 
     void changePlayButton() {

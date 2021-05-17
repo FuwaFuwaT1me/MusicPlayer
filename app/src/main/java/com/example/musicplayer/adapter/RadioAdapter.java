@@ -71,7 +71,7 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 if (!hasConnection()) {
-                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getResources().getString(R.string.noConnection), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -85,10 +85,6 @@ public class RadioAdapter extends Adapter<RadioAdapter.ViewHolder> {
                 player.setIsPlaying(true);
                 player.setIsAnotherSong(true);
                 player.setSource(player.getCurrentRadioTrack().getPath());
-
-                for (Radio radio : db.radioDao().getAll()) {
-                    Log.d("testing", radio.getId() + " " + radio.getPath());
-                }
 
                 context.startService(App.getApp().getPlayerService());
                 createRadioNotification(R.drawable.ic_pause_red);

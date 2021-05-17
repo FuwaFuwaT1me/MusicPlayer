@@ -79,6 +79,8 @@ public class LikedActivity extends AppCompatActivity implements Playable {
             registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
             startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
         }
+
+        ifNoLiked();
     }
 
     void init() {
@@ -131,6 +133,8 @@ public class LikedActivity extends AppCompatActivity implements Playable {
                         createTrackNotification(R.drawable.ic_pause_red);
                     }
                     else {
+                        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+                        App.getApp().getLoadingDialog().startLoadingAnimation();
                         createRadioNotification(R.drawable.ic_pause_red);
                     }
 
@@ -366,16 +370,36 @@ public class LikedActivity extends AppCompatActivity implements Playable {
     }
 
     void changePlaying() {
-        for (Track track : db.trackDao().getAll()) {
-            db.trackDao().updatePlaying(track.getId(), false);
-            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        if (player.getSource().equals(".")) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+                if (track.getId() == player.getCurrentTrack().getId())
+                    db.trackDao().updatePlaying(track.getId(), true);
+            }
+            adapter.setData(getLikedTracks());
+            adapter.notifyDataSetChanged();
         }
-        adapter.setData(getLikedTracks());
-        adapter.notifyDataSetChanged();
     }
 
     void changePlayButton() {
         if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
         else play.setBackgroundResource(appColor.getPlayColor());
+    }
+
+    void ifNoLiked() {
+        int count = 0;
+        for (Track track : db.trackDao().getAll()) {
+            if (track.isLiked()) count++;
+        }
+
+        TextView noLiked = findViewById(R.id.noLiked);
+        if (count == 0) {
+            tracks.setVisibility(View.GONE);
+            noLiked.setVisibility(View.VISIBLE);
+        }
+        else {
+            noLiked.setVisibility(View.GONE);
+            tracks.setVisibility(View.VISIBLE);
+        }
     }
 }

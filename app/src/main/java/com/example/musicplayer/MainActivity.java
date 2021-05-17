@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -183,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     private void addDrawerItems() {
-        String[] osArray = { "Radio", "Playlists", "Liked", "Settings" };
+        String[] osArray = { getString(R.string.radio), getString(R.string.playlists), getString(R.string.liked), getString(R.string.settings) };
         mAdapter = new ArrayAdapter<String>(this, R.layout.left_menu_textview, osArray);
         mDrawerList.setAdapter(mAdapter);
 
@@ -320,6 +321,12 @@ public class MainActivity extends AppCompatActivity implements Playable {
             trackAdapter.notifyDataSetChanged();
             isMusicPlayerInit = true;
         }
+
+        if (db.trackDao().getAll().isEmpty()) {
+            TextView noSongs = findViewById(R.id.noSongs);
+            listView.setVisibility(View.GONE);
+            noSongs.setVisibility(View.VISIBLE);
+        }
     }
 
     private void createChannel() {
@@ -361,21 +368,25 @@ public class MainActivity extends AppCompatActivity implements Playable {
             moveTrack(-1);
             createTrackNotification(appColor.getPauseColor());
         }
-        else if (!player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
+        else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
             moveRadio(-1);
             createRadioNotification(appColor.getPauseColor());
         }
         changePlaying();
         updateTitle();
+        Log.d("testing", ""+player.getCurrentQueueTrack());
     }
 
     @Override
     public void onTrackPlay() {
         if (player.getMediaPlayer() == null) return;
+
         if (player.getSource().equals(".")) {
             createTrackNotification(appColor.getPauseColor());
         }
         else {
+            App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+            App.getApp().getLoadingDialog().startLoadingAnimation();
             createRadioNotification(appColor.getPauseColor());
         }
 
@@ -504,12 +515,15 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void changePlaying() {
-        for (Track track : db.trackDao().getAll()) {
-            db.trackDao().updatePlaying(track.getId(), false);
-            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        if (player.getSource().equals(".")) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+                if (track.getId() == player.getCurrentTrack().getId())
+                    db.trackDao().updatePlaying(track.getId(), true);
+            }
+            trackAdapter.setData(db.trackDao().getAll());
+            trackAdapter.notifyDataSetChanged();
         }
-        trackAdapter.setData(db.trackDao().getAll());
-        trackAdapter.notifyDataSetChanged();
     }
 
     void setColor() {

@@ -62,6 +62,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     AppDatabase db;
     AppColor appColor;
     RelativeLayout layout;
+    boolean connection;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -142,7 +143,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.getMediaPlayer() == null) return;
+                if (player.getMediaPlayer() == null && !connection) return;
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
                         createTrackNotification(appColor.getPlayColor());
@@ -160,6 +161,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                         createTrackNotification(appColor.getPauseColor());
                     }
                     else {
+                        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+                        App.getApp().getLoadingDialog().startLoadingAnimation();
                         createRadioNotification(appColor.getPauseColor());
                     }
 
@@ -173,7 +176,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.getMediaPlayer() == null) return;
+                if (player.getMediaPlayer() == null && !connection) return;
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
@@ -189,7 +192,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.getMediaPlayer() == null) return;
+                if (player.getMediaPlayer() == null && !connection) return;
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
@@ -220,9 +223,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             super.onPreExecute();
 
             if (!hasConnection()) {
-                Toast.makeText(RadioActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RadioActivity.this, getResources().getString(R.string.noConnection), Toast.LENGTH_SHORT).show();
+                connection = false;
                 return;
             }
+            connection = true;
 
             App.getApp().createLoadingDialog(RadioActivity.this);
             App.getApp().getLoadingDialog().startLoadingAnimation();
@@ -230,34 +235,36 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
         @Override
         protected String doInBackground(String... urls) {
-            URL url = null;
-            try {
-                url = new URL(urls[0]);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            try {
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("HEAD");
-                con.connect();
-                if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    con.disconnect();
-                    throw new Exception();
+            if (connection) {
+                URL url = null;
+                try {
+                    url = new URL(urls[0]);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
                 }
-                con.disconnect();
-                return url.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("HEAD");
+                    con.connect();
+                    if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        con.disconnect();
+                        throw new Exception();
+                    }
+                    con.disconnect();
+                    return url.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                App.getApp().dismissLoading();
+                App.getApp().nullLoading();
             }
-            App.getApp().dismissLoading();
-            App.getApp().nullLoading();
             return null;
         }
 
         @Override
         protected void onPostExecute(String url) {
             if (url == null) {
-                Toast.makeText(RadioActivity.this, "Wrong URL", Toast.LENGTH_SHORT).show();
+                if (connection) Toast.makeText(RadioActivity.this, getResources().getString(R.string.wrongURL), Toast.LENGTH_SHORT).show();
                 return;
             }
             player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
@@ -372,10 +379,6 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             player.removeRadioIndex(radioToRemove);
             adapter.setData(db.radioDao().getAll());
             adapter.notifyDataSetChanged();
-
-            for (int item1 : player.getRadioIndexes()) {
-                Log.d("testing", item1+"");
-            }
         }
         return true;
     }
@@ -405,6 +408,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
         changePlaying();
         updateTitle();
         play.setBackgroundResource(appColor.getPauseColor());
+        Log.d("testing", "radioActivity");
     }
 
     @Override
@@ -438,6 +442,21 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                     handler.post(new Runnable(){
                         public void run() {
                             if (player.getMediaPlayer() == null) return;
+                            if (!hasConnection() && player.isPlaying()) {
+                                if (player.getSource().equals(".")) {
+                                    createTrackNotification(appColor.getPlayColor());
+                                }
+                                else {
+                                    createRadioNotification(appColor.getPlayColor());
+                                }
+
+                                player.setIsPlaying(false);
+                                play.setBackgroundResource(appColor.getPlayColor());
+                                stopService(App.getApp().getPlayerService());
+                                Toast.makeText(RadioActivity.this, getResources().getString(R.string.noConnection), Toast.LENGTH_SHORT).show();
+                                connection = false;
+                            }
+                            connection = true;
                             updateTitle();
                             changePlayButton();
                         }
@@ -472,12 +491,15 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     }
 
     void changePlaying() {
-        for (Radio radio : db.radioDao().getAll()) {
-            db.radioDao().updatePlaying(radio.getId(), false);
-            if (radio.getId() == player.getCurrentRadioTrack().getId()) db.radioDao().updatePlaying(radio.getId(), true);
+        if (!player.getSource().equals(".")) {
+            for (Radio radio : db.radioDao().getAll()) {
+                db.radioDao().updatePlaying(radio.getId(), false);
+                if (radio.getId() == player.getCurrentRadioTrack().getId())
+                    db.radioDao().updatePlaying(radio.getId(), true);
+            }
+            adapter.setData(db.radioDao().getAll());
+            adapter.notifyDataSetChanged();
         }
-        adapter.setData(db.radioDao().getAll());
-        adapter.notifyDataSetChanged();
     }
 
     void changePlayButton() {

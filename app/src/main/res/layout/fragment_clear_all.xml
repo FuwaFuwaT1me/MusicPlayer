@@ -8,7 +8,7 @@
     <Button
         android:id="@+id/clearButton"
         android:background="@drawable/list_bg_red"
-        android:text="Clear"
+        android:text="@string/clear"
         android:padding="10dp"
         android:textStyle="italic"
         android:textColor="@color/white"

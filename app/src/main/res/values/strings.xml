@@ -1,6 +1,24 @@
 <resources>
-    <string name="app_name">MusicPlayer</string>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name" translatable="false">EarFeeder</string>
+    <string name="drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="drawer_close" translatable="false">Close navigation drawer</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="loading" translatable="false">Loading…</string>
+    <string name="song_name" translatable="false">song name</string>
+    <string name="clear" translatable="false">Clear</string>
+    <string name="app_scheme_color_selection" translatable="false">App scheme color selection</string>
+    <string name="clear_all_data" translatable="false">Clear all data</string>
+    <string name="radio_name" translatable="false">Radio name</string>
+    <string name="radio_link" translatable="false">Radio link</string>
+    <string name="playlist_name" translatable="false">Playlist name</string>
+    <string name="favourite_songs" translatable="false">Favourite songs</string>
+    <string name="noFav" translatable="false">Your favourite songs will display here</string>
+    <string name="create_playlist" translatable="false">Create playlist</string>
+    <string name="radio" translatable="false">Radio</string>
+    <string name="playlists" translatable="false">Playlists</string>
+    <string name="liked" translatable="false">Liked</string>
+    <string name="settings" translatable="false">Settings</string>
+    <string name="noConnection" translatable="false">No internet connection</string>
+    <string name="wrongURL" translatable="false">Wrong URL</string>
+    <string name="set_radio">Set radio</string>
 </resources>

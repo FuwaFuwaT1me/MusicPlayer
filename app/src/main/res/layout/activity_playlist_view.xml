@@ -18,7 +18,7 @@
         android:id="@+id/playlistName"
         android:layout_width="match_parent"
         android:layout_marginTop="10dp"
-        android:text="Playlist name"
+        android:text="@string/playlist_name"
         android:layout_below="@id/playlistTracksBack"
         android:textColor="@color/white"
         android:textSize="30sp"

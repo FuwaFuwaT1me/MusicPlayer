@@ -22,7 +22,18 @@
             android:dividerHeight="10.0sp"
             android:padding="8dp"
             android:layout_weight="1"
-            tools:listitem="@layout/list_item_like"/>
+            tools:listitem="@layout/list_item_like" />
+
+        <TextView
+            android:id="@+id/noSongs"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/white"
+            android:textAlignment="center"
+            android:layout_marginVertical="@dimen/activity_horizontal_margin"
+            android:text="Your songs will display here"
+            android:visibility="gone"/>
 
         <fragment class="com.example.musicplayer.BottomFragment"
             android:id="@+id/bottom_panel"

@@ -202,7 +202,6 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 player.setIsAnotherSong(false);
-                Log.d("testing", player.getMediaPlayer()+"");
                 player.setMediaPlayerCurrentPosition(seekBar.getProgress());
                 if (!player.isPlaying()) {
                     player.setSeekWhilePause(true);
@@ -290,11 +289,8 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         for (Track track : player.getQueue()) {
             if (index == 0) {
                 curr = track;
-                Log.d("testing", "" + track.getId());
-                Log.d("testing", "" + curr.getId());
                 index++;
             }
-            Log.d("testing", "id = " + track.getId());
         }
 
         player.setWasSongSwitched(true);

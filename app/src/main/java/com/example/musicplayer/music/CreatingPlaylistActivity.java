@@ -154,6 +154,8 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
                         createTrackNotification(R.drawable.ic_play_red);
                     }
                     else {
+                        App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
+                        App.getApp().getLoadingDialog().startLoadingAnimation();
                         createRadioNotification(R.drawable.ic_play_red);
                     }
 
@@ -352,12 +354,15 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
     }
 
     void changePlaying() {
-        for (Track track : db.trackDao().getAll()) {
-            db.trackDao().updatePlaying(track.getId(), false);
-            if (track.getId() == player.getCurrentTrack().getId()) db.trackDao().updatePlaying(track.getId(), true);
+        if (player.getSource().equals(".")) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+                if (track.getId() == player.getCurrentTrack().getId())
+                    db.trackDao().updatePlaying(track.getId(), true);
+            }
+            adapter.setData(db.trackDao().getAll());
+            adapter.notifyDataSetChanged();
         }
-        adapter.setData(db.trackDao().getAll());
-        adapter.notifyDataSetChanged();
     }
 
     void changePlayButton() {

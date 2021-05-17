@@ -208,7 +208,7 @@ public class Player {
     }
 
     public Radio getCurrentRadioTrack() {
-        return db.radioDao().getById(currentRadio);
+        return db.radioDao().getById(radioIndexes.get(currentRadio));
     }
 
     public  void setCurrentRadio(int index) {

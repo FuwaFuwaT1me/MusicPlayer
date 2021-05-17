@@ -45,7 +45,7 @@
             android:layout_toEndOf="@+id/imgSong"
             android:padding="6dp"
             android:textColor="@color/white"
-            android:text="song name"
+            android:text="@string/song_name"
             android:textSize="15sp"
             android:singleLine="true"
             android:marqueeRepeatLimit="marquee_forever"

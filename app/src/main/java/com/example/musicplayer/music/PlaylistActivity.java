@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -242,6 +243,12 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
             player.removePlaylistIndex(selectedPlaylist);
             adapter.setData(db.playlistDao().getAll());
             adapter.notifyDataSetChanged();
+
+            if (!db.playlistDao().ifExist()) {
+                TextView noPlaylists = findViewById(R.id.noPlaylists);
+                playlists.setVisibility(View.GONE);
+                noPlaylists.setVisibility(View.VISIBLE);
+            }
         }
         return true;
     }
@@ -263,6 +270,18 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
         player.clearSelected();
 
         App.getApp().setCurrentActivity(this);
+
+
+        if (!db.playlistDao().ifExist()) {
+            TextView noPlaylists = findViewById(R.id.noPlaylists);
+            playlists.setVisibility(View.GONE);
+            noPlaylists.setVisibility(View.VISIBLE);
+        }
+        else {
+            TextView noPlaylists = findViewById(R.id.noPlaylists);
+            playlists.setVisibility(View.VISIBLE);
+            noPlaylists.setVisibility(View.GONE);
+        }
     }
 
     void moveTrack(int direction) {

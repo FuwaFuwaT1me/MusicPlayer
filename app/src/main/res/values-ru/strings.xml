@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name" translatable="false">EarFeeder</string>
+
+    <string name="loading" translatable="false">Загрузка…</string>
+    <string name="song_name" translatable="false">Название песни</string>
+    <string name="clear" translatable="false">Очистить</string>
+    <string name="app_scheme_color_selection" translatable="false">Выбор цветовой схемы приложения</string>
+    <string name="clear_all_data" translatable="false">Очистить все данные</string>
+    <string name="radio_name" translatable="false">Название радио</string>
+    <string name="radio_link" translatable="false">Ссылка на радио</string>
+    <string name="playlist_name" translatable="false">Название плейлиста</string>
+    <string name="favourite_songs" translatable="false">Любимые песни</string>
+    <string name="noFav" translatable="false">Ваши любимые песни будут изображены здесь</string>
+    <string name="create_playlist" translatable="false">Создать плейлист</string>
+    <string name="radio" translatable="false">Радио</string>
+    <string name="playlists" translatable="false">Плейлисты</string>
+    <string name="liked" translatable="false">Понравившиеся</string>
+    <string name="settings" translatable="false">Настройки</string>
+    <string name="noConnection" translatable="false">Нет интернет подключения</string>
+    <string name="wrongURL" translatable="false">Неверная ссылка</string>
+    <string name="set_radio">Установить радио</string>
+</resources>

@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.example.musicplayer.App;
-import com.example.musicplayer.Player;
+import com.example.musicplayer.app.App;
+import com.example.musicplayer.player.Player;
 
 import java.io.IOException;
 

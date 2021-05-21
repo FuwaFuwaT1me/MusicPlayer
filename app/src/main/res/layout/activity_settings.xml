@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/black"
-    tools:context=".SettingsActivity">
+    tools:context=".activities.settings.SettingsActivity">
 
     <Button
         android:id="@+id/settingsBack"
@@ -31,7 +31,7 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/colorSchemeTextView"
         android:id="@+id/colorFragment"
-        android:name="com.example.musicplayer.ColorSelectionFragment"
+        android:name="com.example.musicplayer.fragment.settings.ColorSelectionFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:layout="@layout/fragment_color_selection"/>
@@ -50,7 +50,7 @@
 
     <fragment
         android:id="@+id/clearFragment"
-        android:name="com.example.musicplayer.ClearAllFragment"
+        android:name="com.example.musicplayer.fragment.settings.ClearAllFragment"
         android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true"
         tools:layout="@layout/fragment_clear_all"

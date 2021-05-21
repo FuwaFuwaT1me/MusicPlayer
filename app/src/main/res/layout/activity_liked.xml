@@ -71,7 +71,7 @@
             android:text="@string/noFav"
             android:visibility="gone"/>
 
-        <fragment class="com.example.musicplayer.BottomFragment"
+        <fragment class="com.example.musicplayer.fragment.musiccontroller.BottomFragment"
             android:id="@+id/bottom_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

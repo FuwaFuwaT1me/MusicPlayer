@@ -11,7 +11,7 @@
     <LinearLayout
         android:orientation="vertical" android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity"
+        tools:context=".activities.main.MainActivity"
         android:background="@color/black">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -35,7 +35,7 @@
             android:text="@string/noSongs"
             android:visibility="gone"/>
 
-        <fragment class="com.example.musicplayer.BottomFragment"
+        <fragment class="com.example.musicplayer.fragment.musiccontroller.BottomFragment"
             android:id="@+id/bottom_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

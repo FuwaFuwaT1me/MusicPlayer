@@ -61,7 +61,7 @@
         android:text="Your playlists will display here"
         android:visibility="gone"/>
 
-    <fragment class="com.example.musicplayer.BottomFragment"
+    <fragment class="com.example.musicplayer.fragment.musiccontroller.BottomFragment"
         android:id="@+id/bottom_panel"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"

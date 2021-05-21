@@ -10,11 +10,11 @@ import android.support.v4.media.session.MediaSessionCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.example.musicplayer.App;
-import com.example.musicplayer.MainActivity;
+import com.example.musicplayer.app.App;
+import com.example.musicplayer.activities.main.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.Services.NotificationActionService;
-import com.example.musicplayer.database.Track;
+import com.example.musicplayer.database.track.Track;
 
 public class CreateNotification {
     public static final String CHANNEL_ID = "channel1";
@@ -24,7 +24,7 @@ public class CreateNotification {
 
     public static Notification notification;
 
-    public static void createNotification(Context context, Track track, int playButton, int pos, int size) {
+    public static void createNotification(Context context, int playButton, int pos, int size) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
             MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(context, "tag");

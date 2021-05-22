@@ -145,10 +145,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 if (player.getMediaPlayer() == null && !connection) return;
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(appColor.getPlayColor());
+                        App.getApp().createTrackNotification(appColor.getPlayColor());
                     }
                     else {
-                        createRadioNotification(appColor.getPlayColor());
+                        App.getApp().createRadioNotification(appColor.getPlayColor());
                     }
 
                     player.setIsPlaying(false);
@@ -157,12 +157,12 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(appColor.getPauseColor());
+                        App.getApp().createTrackNotification(appColor.getPauseColor());
                     }
                     else {
                         App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
                         App.getApp().getLoadingDialog().startLoadingAnimation();
-                        createRadioNotification(appColor.getPauseColor());
+                        App.getApp().createRadioNotification(appColor.getPauseColor());
                     }
 
                     player.setIsPlaying(true);
@@ -179,11 +179,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(appColor.getPauseColor());
+                    App.getApp().createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(appColor.getPauseColor());
+                    App.getApp().createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -195,11 +195,11 @@ public class RadioActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(appColor.getPauseColor());
+                    App.getApp().createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(appColor.getPauseColor());
+                    App.getApp().createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -272,7 +272,7 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             player.incRadioIndex();
 
             stopService(App.getApp().getPlayerService());
-            player.setSource(url.toString());
+            player.setSource(url);
             player.setCurrentRadio(player.getRadioListSize() - 1);
             adapter.setData(db.radioDao().getAll());
             adapter.notifyDataSetChanged();
@@ -319,20 +319,6 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             title.setText(player.getCurrentTitle());
         }
         else if (!player.getSource().equals(".") && !title.getText().equals(player.getCurrentRadioTrack().getName())) title.setText(player.getCurrentRadioTrack().getName());
-    }
-
-    void createTrackNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentQueueTrack(),
-                player.getQueueSize()-1);
-    }
-
-    void createRadioNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentRadio(),
-                player.getRadioListSize() - 1);
     }
 
     private void createChannel() {
@@ -441,10 +427,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                             if (player.getMediaPlayer() == null) return;
                             if (!hasConnection() && player.isPlaying()) {
                                 if (player.getSource().equals(".")) {
-                                    createTrackNotification(appColor.getPlayColor());
+                                    App.getApp().createTrackNotification(appColor.getPlayColor());
                                 }
                                 else {
-                                    createRadioNotification(appColor.getPlayColor());
+                                    App.getApp().createRadioNotification(appColor.getPlayColor());
                                 }
 
                                 player.setIsPlaying(false);
@@ -456,6 +442,10 @@ public class RadioActivity extends AppCompatActivity implements Playable {
                             connection = true;
                             updateTitle();
                             changePlayButton();
+                            if (player.wasSongSwitched()) {
+                                changePlaying();
+                                player.setWasSongSwitched(false);
+                            }
                         }
                     });
                 }
@@ -502,5 +492,12 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     void changePlayButton() {
         if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
         else play.setBackgroundResource(appColor.getPlayColor());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        App.getApp().recreateNotification();
     }
 }

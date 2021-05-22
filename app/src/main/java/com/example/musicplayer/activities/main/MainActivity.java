@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -59,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
     private static final String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
     private static final int REQUEST_PERMISSIONS = 12345;
     private static final int PERMISSIONS_COUNT = 2;
-    private boolean isMusicPlayerInit = false;
     private final int REQUEST_CODE_PERMISSION_WRITE_STORAGE = 1;
     Button prev, play, next;
     TextView songName;
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
             }
 
             if (App.getApp().getPlayerService() == null) App.getApp().setPlayerService(new Intent(this, BackgroundMusicService.class));
-            onResume();
+            //onResume();
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
@@ -138,12 +138,14 @@ public class MainActivity extends AppCompatActivity implements Playable {
         listView.setLayoutManager(new LinearLayoutManager(this));
         listView.setHasFixedSize(true);
 
-        for (Track track : db.trackDao().getAll()) {
-            db.trackDao().updatePlaying(track.getId(), false);
-        }
+        if (!App.getApp().isMusicPlayerInit()) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+            }
 
-        for (Radio radio : db.radioDao().getAll()) {
-            db.radioDao().updatePlaying(radio.getId(), false);
+            for (Radio radio : db.radioDao().getAll()) {
+                db.radioDao().updatePlaying(radio.getId(), false);
+            }
         }
 
         play.setOnClickListener(new View.OnClickListener() {
@@ -302,12 +304,26 @@ public class MainActivity extends AppCompatActivity implements Playable {
             return;
         }
 
-        updateTitle();
+        App.getApp().setLastActivity(this);
+
+        player = App.getApp().getPlayer();
+
+        if (!App.getApp().isMusicPlayerInit()) {
+            for (Track track : db.trackDao().getAll()) {
+                db.trackDao().updatePlaying(track.getId(), false);
+            }
+            fillMusicList();
+            App.getApp().setMusicPlayerInit(true);
+        }
+        else {
+            updateTitle();
+            changePlayButton();
+            changePlaying();
+        }
+
+        App.getApp().recreateNotification();
 
         App.getApp().setCurrentActivity(this);
-
-        trackAdapter.setData(db.trackDao().getAll());
-        trackAdapter.notifyDataSetChanged();
 
         setColor();
         setActionBarColor();
@@ -315,16 +331,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (!running) {
             running = true;
             startTitleThread();
-        }
-
-        if (!isMusicPlayerInit) {
-            for (Track track : db.trackDao().getAll()) {
-                db.trackDao().updatePlaying(track.getId(), false);
-            }
-            fillMusicList();
-            trackAdapter.setData(db.trackDao().getAll());
-            trackAdapter.notifyDataSetChanged();
-            isMusicPlayerInit = true;
         }
 
         if (db.trackDao().getAll().isEmpty()) {
@@ -371,11 +377,11 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (player.getMediaPlayer() == null) return;
         if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
             moveTrack(-1);
-            createTrackNotification(appColor.getPauseColor());
+            App.getApp().createTrackNotification(appColor.getPauseColor());
         }
         else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
             moveRadio(-1);
-            createRadioNotification(appColor.getPauseColor());
+            App.getApp().createRadioNotification(appColor.getPauseColor());
         }
         changePlaying();
         updateTitle();
@@ -387,12 +393,12 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (player.getMediaPlayer() == null) return;
 
         if (player.getSource().equals(".")) {
-            createTrackNotification(appColor.getPauseColor());
+            App.getApp().createTrackNotification(appColor.getPauseColor());
         }
         else {
             App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
             App.getApp().getLoadingDialog().startLoadingAnimation();
-            createRadioNotification(appColor.getPauseColor());
+            App.getApp().createRadioNotification(appColor.getPauseColor());
         }
 
         player.setIsPlaying(true);
@@ -405,10 +411,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
     public void onTrackPause() {
         if (player.getMediaPlayer() == null) return;
         if (player.getSource().equals(".")) {
-            createTrackNotification(appColor.getPlayColor());
+            App.getApp().createTrackNotification(appColor.getPlayColor());
         }
         else {
-            createRadioNotification(appColor.getPlayColor());
+            App.getApp().createRadioNotification(appColor.getPlayColor());
         }
 
         player.setIsPlaying(false);
@@ -422,28 +428,14 @@ public class MainActivity extends AppCompatActivity implements Playable {
         if (player.getMediaPlayer() == null) return;
         if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
             moveTrack(1);
-            createTrackNotification(appColor.getPauseColor());
+            App.getApp().createTrackNotification(appColor.getPauseColor());
         }
         else if (!player.getSource().equals(".") && player.getCurrentRadio() + 1 < player.getRadioListSize()) {
             moveRadio(1);
-            createRadioNotification(appColor.getPauseColor());
+            App.getApp().createRadioNotification(appColor.getPauseColor());
         }
         changePlaying();
         updateTitle();
-    }
-
-    void createTrackNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentQueueTrack(),
-                player.getQueueSize()-1);
-    }
-
-    void createRadioNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentRadio(),
-                player.getRadioListSize() - 1);
     }
 
     void moveTrack(int direction) {
@@ -504,6 +496,14 @@ public class MainActivity extends AppCompatActivity implements Playable {
                             }
                             updateTitle();
                             changePlayButton();
+                            if (player.wasSongSwitched()) {
+                                changePlaying();
+                                player.setWasSongSwitched(false);
+                            }
+                            if (App.getApp().getLastActivity() == MainActivity.this) {
+                                App.getApp().recreateNotification();
+                                App.getApp().setLastActivity(null);
+                            }
                         }
                     });
                 }
@@ -518,6 +518,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void changePlaying() {
+        Log.d("testing", "aaa");
         if (player.getSource().equals(".")) {
             for (Track track : db.trackDao().getAll()) {
                 db.trackDao().updatePlaying(track.getId(), false);

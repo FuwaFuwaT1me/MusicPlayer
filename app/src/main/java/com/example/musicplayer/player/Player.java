@@ -1,8 +1,11 @@
     package com.example.musicplayer.player;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 
+import com.example.musicplayer.activities.songcontroller.SongActivity;
 import com.example.musicplayer.app.App;
+import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.database.AppDatabase;
 import com.example.musicplayer.database.playlist.Playlist;
 import com.example.musicplayer.database.radio.Radio;
@@ -42,6 +45,10 @@ public class Player {
 
     private int currentQueueTrack = -1;
 
+    AppColor appColor;
+
+    private boolean wasPlayingChanged = false;
+
 
     public Player() {
         db = App.getApp().getDb();
@@ -67,6 +74,8 @@ public class Player {
             playlistIndex = list.get(list.size() - 1).getId();
             incPlaylistIndex();
         }
+
+        appColor = App.getApp().getAppColor();
     }
 
     public boolean isSeekWhilePause() {
@@ -330,6 +339,28 @@ public class Player {
 
     public  void setMediaPlayer(MediaPlayer mediaPlayer) {
         this.mediaPlayer = mediaPlayer;
+    }
+
+    void moveTrack(int direction, Context context) {
+        setWasSongSwitched(true);
+        setCurrentQueueTrack(getCurrentQueueTrack() + direction);
+        context.stopService(App.getApp().getPlayerService());
+        setIsAnotherSong(true);
+        context.startService(App.getApp().getPlayerService());
+    }
+
+    public void playNext(Context context) {
+        if (getCurrentQueueTrack() + 1 < getQueueSize()) {
+            moveTrack(1, context);
+        }
+        else {
+            getMediaPlayer().seekTo(getDuration());
+
+            context.stopService(App.getApp().getPlayerService());
+        }
+        App.getApp().createTrackNotification(appColor.getPauseColor());
+
+        setWasSongSwitched(true);
     }
 
     public int getCurrentPosition() {

@@ -143,7 +143,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                         player.setIsAnotherSong(true);
                         player.setSource(".");
                         startService(App.getApp().getPlayerService());
-                        createTrackNotification(appColor.getPauseColor());
+                        App.getApp().createTrackNotification(appColor.getPauseColor());
                         play.setBackgroundResource(appColor.getPauseColor());
                         player.setCurrentPlaylist(player.getPlaylistToView());
 
@@ -174,10 +174,10 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
             public void onClick(View v) {
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(appColor.getPlayColor());
+                        App.getApp().createTrackNotification(appColor.getPlayColor());
                     }
                     else {
-                        createRadioNotification(appColor.getPlayColor());
+                        App.getApp().createRadioNotification(appColor.getPlayColor());
                     }
 
                     player.setIsPlaying(false);
@@ -186,12 +186,12 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 } else {
                     if (player.getMediaPlayer() == null) player.setCurrentQueueTrack(0);
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(appColor.getPauseColor());
+                        App.getApp().createTrackNotification(appColor.getPauseColor());
                     }
                     else {
                         App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
                         App.getApp().getLoadingDialog().startLoadingAnimation();
-                        createRadioNotification(appColor.getPauseColor());
+                        App.getApp().createRadioNotification(appColor.getPauseColor());
                     }
 
                     player.setIsPlaying(true);
@@ -207,11 +207,11 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 if (player.getMediaPlayer() == null) return;
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(appColor.getPauseColor());
+                    App.getApp().createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(appColor.getPauseColor());
+                    App.getApp().createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -222,11 +222,11 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                 if (player.getMediaPlayer() == null) return;
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(appColor.getPauseColor());
+                    App.getApp().createTrackNotification(appColor.getPauseColor());
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(appColor.getPauseColor());
+                    App.getApp().createRadioNotification(appColor.getPauseColor());
                 }
                 changePlaying();
             }
@@ -253,6 +253,8 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     @Override
     protected void onResume() {
         super.onResume();
+
+        App.getApp().recreateNotification();
 
         List<Track> updatedTracks = getPlaylistTracks(player.getPlaylistToView());
 
@@ -324,20 +326,6 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
         else if (!player.getSource().equals(".") && !title.getText().equals(player.getCurrentRadioTrack().getName())) title.setText(player.getCurrentRadioTrack().getName());
     }
 
-    void createTrackNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentQueueTrack(),
-                player.getQueueSize()-1);
-    }
-
-    void createRadioNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentRadio(),
-                player.getRadioListSize() - 1);
-    }
-
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -401,6 +389,10 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
                             }
                             updateTitle();
                             changePlayButton();
+                            if (player.wasSongSwitched()) {
+                                changePlaying();
+                                player.setWasSongSwitched(false);
+                            }
                         }
                     });
                 }

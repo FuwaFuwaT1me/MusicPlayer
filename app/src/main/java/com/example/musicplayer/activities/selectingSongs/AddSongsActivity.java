@@ -155,12 +155,12 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
                 if (player.getMediaPlayer() == null) return;
                 if (player.isPlaying()) {
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_play_red);
+                        App.getApp().createTrackNotification(R.drawable.ic_play_red);
                     }
                     else {
                         App.getApp().createLoadingDialog(App.getApp().getCurrentActivity());
                         App.getApp().getLoadingDialog().startLoadingAnimation();
-                        createRadioNotification(R.drawable.ic_play_red);
+                        App.getApp().createRadioNotification(R.drawable.ic_play_red);
                     }
 
                     player.setIsPlaying(false);
@@ -169,10 +169,10 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
                 } else {
                     if (player.getMediaPlayer() == null) return;
                     if (player.getSource().equals(".")) {
-                        createTrackNotification(R.drawable.ic_pause_red);
+                        App.getApp().createTrackNotification(R.drawable.ic_pause_red);
                     }
                     else {
-                        createRadioNotification(R.drawable.ic_pause_red);
+                        App.getApp().createRadioNotification(R.drawable.ic_pause_red);
                     }
 
                     player.setIsPlaying(true);
@@ -189,11 +189,11 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() - 1 >= 0) {
                     moveTrack(-1);
-                    createTrackNotification(R.drawable.ic_pause_red);
+                    App.getApp().createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() - 1 >= 0) {
                     moveRadio(-1);
-                    createRadioNotification(R.drawable.ic_pause_red);
+                    App.getApp().createRadioNotification(R.drawable.ic_pause_red);
                 }
                 changePlaying();
             }
@@ -205,11 +205,11 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
 
                 if (player.getSource().equals(".") && player.getCurrentQueueTrack() + 1 < player.getQueueSize()) {
                     moveTrack(1);
-                    createTrackNotification(R.drawable.ic_pause_red);
+                    App.getApp().createTrackNotification(R.drawable.ic_pause_red);
                 }
                 else if (!player.getSource().equals(".") && player.getCurrentRadio() +1 < player.getRadioListSize()) {
                     moveRadio(1);
-                    createRadioNotification(R.drawable.ic_pause_red);
+                    App.getApp().createRadioNotification(R.drawable.ic_pause_red);
                 }
                 changePlaying();
             }
@@ -278,20 +278,6 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
         else if (player.getCurrentRadio() != -1 && !player.getSource().equals(".") && !title.getText().equals(player.getCurrentRadioTrack().getName())) title.setText(player.getCurrentRadioTrack().getName());
     }
 
-    void createTrackNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentQueueTrack(),
-                player.getQueueSize()-1);
-    }
-
-    void createRadioNotification(int index) {
-        CreateNotification.createNotification(getApplicationContext(),
-                index,
-                player.getCurrentRadio(),
-                player.getRadioListSize() - 1);
-    }
-
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -352,6 +338,10 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
                             if (player.getMediaPlayer() == null) return;
                             changePlayButton();
                             updateTitle();
+                            if (player.wasSongSwitched()) {
+                                changePlaying();
+                                player.setWasSongSwitched(false);
+                            }
                         }
                     });
                 }
@@ -389,5 +379,12 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
     void changePlayButton() {
         if (player.isPlaying()) play.setBackgroundResource(appColor.getPauseColor());
         else play.setBackgroundResource(appColor.getPlayColor());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        App.getApp().recreateNotification();
     }
 }

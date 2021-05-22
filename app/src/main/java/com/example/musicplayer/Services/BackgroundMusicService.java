@@ -34,6 +34,13 @@ public class BackgroundMusicService extends Service {
         if (player.getSource().equals(".")) {
             isFromSource = false;
             player.setMediaPlayer(MediaPlayer.create(this, Uri.parse(player.getCurrentPath())));
+            player.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    player.setLooping(false);
+                    player.playNext(getApplicationContext());
+                }
+            });
         }
         else {
             try {
@@ -72,7 +79,6 @@ public class BackgroundMusicService extends Service {
         player.getMediaPlayer().start();
         player.setPlayerId(player.getMediaPlayer().getAudioSessionId());
         player.setCurrentDuration(player.getMediaPlayer().getDuration());
-        Toast.makeText(this, "started", Toast.LENGTH_SHORT).show();
 
         if (App.getApp().getLoadingDialog() != null) {
             App.getApp().dismissLoading();

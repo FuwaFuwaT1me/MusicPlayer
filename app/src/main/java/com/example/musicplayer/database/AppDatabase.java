@@ -12,7 +12,7 @@ import com.example.musicplayer.database.track.TrackDao;
 import com.example.musicplayer.database.trackplaylist.TrackPlaylist;
 import com.example.musicplayer.database.trackplaylist.TrackPlaylistDao;
 
-@Database(entities = {Track.class, Playlist.class, TrackPlaylist.class, Radio.class}, version = 1, exportSchema = false)
+@Database(entities = {Track.class, Playlist.class, TrackPlaylist.class, Radio.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract TrackDao trackDao();
     public abstract PlaylistDao playlistDao();

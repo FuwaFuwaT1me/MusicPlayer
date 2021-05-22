@@ -2,6 +2,7 @@ package com.example.musicplayer.notification;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -46,7 +47,12 @@ public class CreateNotification {
             PendingIntent pendingIntentPlay = PendingIntent.getBroadcast(context, 0, intentPlay, PendingIntent.FLAG_UPDATE_CURRENT);
 
             Intent intentBack = new Intent(context, MainActivity.class);
-            PendingIntent pendingIntentBack = PendingIntent.getBroadcast(context, 0, intentBack, PendingIntent.FLAG_UPDATE_CURRENT);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+            stackBuilder.addParentStack(MainActivity.class);
+            stackBuilder.addNextIntent(intentBack);
+            PendingIntent pendingIntentBack =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
 
             PendingIntent pendingIntentNext;
             int drw_next;

@@ -129,14 +129,15 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
             public void onClick(View v) {
                 player.setIsAnotherSong(false);
                 if (player.isPlaying()) {
-                    createTrackNotification();
+                    App.getApp().createTrackNotification(appColor.getPlayColor());
 
                     player.setIsPlaying(false);
                     play.setBackgroundResource(appColor.getPlayColor());
                     stopService(App.getApp().getPlayerService());
                 } else {
-                    createTrackNotification();
+                    App.getApp().createTrackNotification(appColor.getPauseColor());
 
+                    player.setIsPlaying(true);
                     player.setIsPlaying(true);
                     play.setBackgroundResource(appColor.getPauseColor());
                     startService(App.getApp().getPlayerService());
@@ -156,7 +157,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                     player.getMediaPlayer().seekTo(0);
                 }
                 play.setBackgroundResource(appColor.getPauseColor());
-                createTrackNotification();
+                App.getApp().createTrackNotification(appColor.getPauseColor());
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
@@ -404,13 +405,6 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         play.setBackgroundResource(appColor.getPauseColor());
     }
 
-    void createTrackNotification() {
-        CreateNotification.createNotification(getApplicationContext(),
-                appColor.getPauseColor(),
-                player.getCurrentQueueTrack(),
-                player.getQueueSize()-1);
-    }
-
     void moveTrack(int direction) {
         player.setWasSongSwitched(true);
         player.setCurrentQueueTrack(player.getCurrentQueueTrack() + direction);
@@ -435,6 +429,7 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         }
         else {
             player.getMediaPlayer().seekTo(player.getDuration());
+
             seekBar.setProgress(player.getDuration());
             startTiming.setText(createTime(player.getDuration()));
 
@@ -442,10 +437,10 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
         }
 
         play.setBackgroundResource(appColor.getPauseColor());
-        createTrackNotification();
+        App.getApp().createTrackNotification(appColor.getPauseColor());
     }
 
-    private void setRepeat() {
+    public void setRepeat() {
         if (player.getMediaPlayer() == null) return;
         if (!player.isRepeated()) {
             player.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -465,5 +460,12 @@ public class SongActivity extends AppCompatActivity implements Runnable, Playabl
                 }
             });
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        App.getApp().recreateNotification();
     }
 }

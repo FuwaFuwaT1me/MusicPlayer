@@ -3,13 +3,12 @@
 import android.content.Context;
 import android.media.MediaPlayer;
 
-import com.example.musicplayer.activities.songcontroller.SongActivity;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.database.AppDatabase;
-import com.example.musicplayer.database.playlist.Playlist;
-import com.example.musicplayer.database.radio.Radio;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Playlist;
+import com.example.musicplayer.database.entities.Radio;
+import com.example.musicplayer.database.entities.Track;
 
 import java.util.ArrayList;
 import java.util.List;

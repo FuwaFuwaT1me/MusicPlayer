@@ -19,8 +19,8 @@ import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.player.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.AppDatabase;
-import com.example.musicplayer.database.radio.Radio;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Radio;
+import com.example.musicplayer.database.entities.Track;
 import com.example.musicplayer.notification.CreateNotification;
 
 import java.util.ArrayList;

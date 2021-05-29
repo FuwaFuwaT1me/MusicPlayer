@@ -14,7 +14,7 @@ import com.example.musicplayer.player.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.database.AppDatabase;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Track;
 
 public class ClearAllFragment extends Fragment {
     Button clear;

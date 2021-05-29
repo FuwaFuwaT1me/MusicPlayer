@@ -1,4 +1,4 @@
-package com.example.musicplayer.database.track;
+package com.example.musicplayer.database.dao;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -6,7 +6,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Track;
 
 import java.util.List;
 

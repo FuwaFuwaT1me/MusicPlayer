@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.R;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Track;
 
 import java.util.ArrayList;
 import java.util.List;

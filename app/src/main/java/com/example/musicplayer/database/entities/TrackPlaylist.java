@@ -1,12 +1,12 @@
-package com.example.musicplayer.database.trackplaylist;
+package com.example.musicplayer.database.entities;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-import com.example.musicplayer.database.playlist.Playlist;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.database.entities.Playlist;
+import com.example.musicplayer.database.entities.Track;
 
 @Entity(foreignKeys = {
         @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId", onDelete = ForeignKey.CASCADE),

@@ -1,11 +1,11 @@
-package com.example.musicplayer.database.radio;
+package com.example.musicplayer.database.dao;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
-import com.example.musicplayer.database.radio.Radio;
+import com.example.musicplayer.database.entities.Radio;
 
 import java.util.List;
 

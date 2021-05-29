@@ -24,13 +24,13 @@ import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.player.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.listener.RecyclerItemClickListener;
-import com.example.musicplayer.Services.NotificationService;
+import com.example.musicplayer.services.NotificationService;
 import com.example.musicplayer.activities.songcontroller.SongActivity;
 import com.example.musicplayer.activities.selectingSongs.AddSongsActivity;
 import com.example.musicplayer.database.AppDatabase;
-import com.example.musicplayer.database.radio.Radio;
-import com.example.musicplayer.database.track.Track;
-import com.example.musicplayer.database.trackplaylist.TrackPlaylist;
+import com.example.musicplayer.database.entities.Radio;
+import com.example.musicplayer.database.entities.Track;
+import com.example.musicplayer.database.entities.TrackPlaylist;
 import com.example.musicplayer.notification.CreateNotification;
 import com.example.musicplayer.notification.Playable;
 

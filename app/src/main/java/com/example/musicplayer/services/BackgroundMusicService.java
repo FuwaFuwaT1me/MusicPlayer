@@ -1,4 +1,4 @@
-package com.example.musicplayer.Services;
+package com.example.musicplayer.services;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -9,7 +9,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 

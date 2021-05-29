@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.color.AppColor;
 import com.example.musicplayer.R;
-import com.example.musicplayer.database.playlist.Playlist;
+import com.example.musicplayer.database.entities.Playlist;
 
 import java.util.ArrayList;
 import java.util.List;

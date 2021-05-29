@@ -1,13 +1,12 @@
-package com.example.musicplayer.database.trackplaylist;
+package com.example.musicplayer.database.dao;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 
-import com.example.musicplayer.database.trackplaylist.TrackPlaylist;
+import com.example.musicplayer.database.entities.TrackPlaylist;
 
 import java.util.List;
 

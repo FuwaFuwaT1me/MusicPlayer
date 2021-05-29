@@ -14,8 +14,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.activities.main.MainActivity;
 import com.example.musicplayer.R;
-import com.example.musicplayer.Services.NotificationActionService;
-import com.example.musicplayer.database.track.Track;
+import com.example.musicplayer.services.NotificationActionService;
 
 public class CreateNotification {
     public static final String CHANNEL_ID = "channel1";

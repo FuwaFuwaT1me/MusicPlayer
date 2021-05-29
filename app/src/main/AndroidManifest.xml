@@ -55,10 +55,10 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".Services.NotificationActionService" />
+        <receiver android:name=".services.NotificationActionService" />
 
-        <service android:name=".Services.NotificationService" />
-        <service android:name=".Services.BackgroundMusicService" />
+        <service android:name=".services.NotificationService" />
+        <service android:name=".services.BackgroundMusicService" />
     </application>
 
 </manifest>

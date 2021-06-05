@@ -517,6 +517,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void changePlaying() {
+        if (!player.isPlaying()) return;
         Log.d("testing", "aaa");
         if (player.getSource().equals(".")) {
             for (Track track : db.trackDao().getAll()) {

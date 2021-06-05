@@ -40,8 +40,11 @@ public class ClearAllFragment extends Fragment {
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //db.radioDao().deleteAll();
-                //player.clearRadioIndexes();
+                getContext().stopService(App.getApp().getPlayerService());
+
+                db.radioDao().deleteAll();
+                player.clearRadioIndexes();
+                player.setCurrentRadio(-1);
 
                 db.trackPlaylistDao().deleteAll();
 

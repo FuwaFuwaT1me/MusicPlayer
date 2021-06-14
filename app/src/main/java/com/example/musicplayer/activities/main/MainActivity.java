@@ -321,6 +321,8 @@ public class MainActivity extends AppCompatActivity implements Playable {
             changePlaying();
         }
 
+        trackAdapter.setData(db.trackDao().getAll());
+
         App.getApp().recreateNotification();
 
         App.getApp().setCurrentActivity(this);
@@ -461,6 +463,7 @@ public class MainActivity extends AppCompatActivity implements Playable {
     }
 
     void updateTitle() {
+        if (!player.isPlaying()) return;
         if (player.getSource().equals(".") && !songName.getText().equals(player.getCurrentTitle())) {
             songName.setText(player.getCurrentTitle());
         }

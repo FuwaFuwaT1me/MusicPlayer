@@ -320,6 +320,7 @@ public class PlaylistViewActivity extends AppCompatActivity implements Playable 
     }
 
     void updateTitle() {
+        if (!player.isPlaying()) return;
         if (player.getSource().equals(".") && !title.getText().equals(player.getCurrentTitle())) {
             title.setText(player.getCurrentTitle());
         }

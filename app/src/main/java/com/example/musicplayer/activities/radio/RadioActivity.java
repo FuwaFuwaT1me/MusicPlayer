@@ -98,6 +98,8 @@ public class RadioActivity extends AppCompatActivity implements Playable {
     }
 
     void init() {
+        App.getApp().setLastActivity(this);
+
         setRadioButton = findViewById(R.id.setRadioButton);
         radioUrl = findViewById(R.id.radioUrl);
         radioList = findViewById(R.id.radioList);
@@ -269,11 +271,16 @@ public class RadioActivity extends AppCompatActivity implements Playable {
             player.addRadio(new Radio(player.getRadioIndex(), radioTitle.getText().toString(), radioUrl.getText().toString()));
             player.addRadioIndex(player.getRadioIndex());
             int index = player.getRadioIndex();
+            Log.d("testing", ""+index);
+            for (int radio : player.getRadioIndexes()) {
+                Log.d("testing", db.radioDao().getById(radio).getId() + " " + db.radioDao().getById(radio).getName());
+            }
             player.incRadioIndex();
 
             stopService(App.getApp().getPlayerService());
             player.setSource(url);
             player.setCurrentRadio(player.getRadioListSize() - 1);
+            Log.d("testing", "curSize = " + player.getCurrentRadioTrack().getId());
             adapter.setData(db.radioDao().getAll());
             adapter.notifyDataSetChanged();
             player.setIsPlaying(true);

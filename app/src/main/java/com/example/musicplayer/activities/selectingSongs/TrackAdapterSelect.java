@@ -2,6 +2,7 @@ package com.example.musicplayer.activities.selectingSongs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +15,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.musicplayer.activities.playlist.PlaylistActivity;
+import com.example.musicplayer.activities.playlistview.PlaylistViewActivity;
 import com.example.musicplayer.app.App;
 import com.example.musicplayer.color.AppColor;
+import com.example.musicplayer.database.entities.TrackPlaylist;
 import com.example.musicplayer.player.Player;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.AppDatabase;
@@ -87,8 +91,29 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
             public void onClick(View v) {
                 context.stopService(App.getApp().getPlayerService());
                 player.clearQueue();
-                for (Track track : db.trackDao().getAll()) player.addToQueue(track);
+                List<Track> reducedTracks = new ArrayList<>();
+
+                if (App.getApp().getLastCondition() == 1) {
+                    Log.d("testing", "in added");
+                    List<TrackPlaylist> temp = db.trackPlaylistDao().getAllByPlaylistId(player.getPlaylistToView());
+                    List<Integer> alreadyExistTracks = new ArrayList<>();
+                    for (TrackPlaylist t : temp) {
+                        Log.d("testing", "temp : " + t.getTrackId());
+                        alreadyExistTracks.add(t.getTrackId());
+                    }
+
+                    for (Track track : db.trackDao().getAll()) {
+                        if (!alreadyExistTracks.contains(track.getId())) {
+                            reducedTracks.add(track);
+                            player.addToQueue(track);
+                        }
+                        else Log.d("testing", ""+track.getName());
+                    }
+                }
+                else if (App.getApp().getLastCondition() == 0) for (Track track : db.trackDao().getAll()) player.addToQueue(track);
+
                 player.setCurrentQueueTrack(position);
+                Log.d("testing", "qeueu = " + player.getCurrentQueueTrack());
                 player.setIsPlaying(true);
                 player.setIsAnotherSong(true);
                 player.setSource(".");
@@ -97,17 +122,31 @@ public class TrackAdapterSelect extends RecyclerView.Adapter<TrackAdapterSelect.
 
                 for (Track track : db.trackDao().getAll()) db.trackDao().updatePlaying(track.getId(), false);
 
-                for (Track track : db.trackDao().getAll()) {
-                    if (position == track.getId()) {
-                        db.trackDao().updatePlaying(track.getId(), true);
-                        track.setPlaying(true);
+                if (App.getApp().getLastCondition() == 0) {
+                    for (Track track : db.trackDao().getAll()) {
+                        if (position == track.getId()) {
+                            db.trackDao().updatePlaying(track.getId(), true);
+                            track.setPlaying(true);
+                        }
                     }
                 }
 
-                for (Radio radio : db.radioDao().getAll()) db.radioDao().updatePlaying(radio.getId(), false);
+                for (Track track : reducedTracks) track.setPlaying(false);
 
-                setData(db.trackDao().getAll());
-                notifyDataSetChanged();
+                if (App.getApp().getLastCondition() == 1) {
+                    for (Track track : reducedTracks) {
+                        if (player.getCurrentTrack().getId() == track.getId()) {
+                            track.setPlaying(true);
+                            db.trackDao().updatePlaying(track.getId(), true);
+                        }
+                    }
+                }
+
+                 for (Radio radio : db.radioDao().getAll()) db.radioDao().updatePlaying(radio.getId(), false);
+
+                 if (App.getApp().getLastCondition() == 0) setData(db.trackDao().getAll());
+                 else if (App.getApp().getLastCondition() == 1) setData(reducedTracks);
+                 notifyDataSetChanged();
 
                 player.setIsShuffled(false);
             }

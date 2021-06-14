@@ -84,6 +84,8 @@ public class LikedActivity extends AppCompatActivity implements Playable {
     }
 
     void init() {
+        App.getApp().setLastActivity(this);
+
         playlistName = findViewById(R.id.playlistName);
         tracks = findViewById(R.id.likedSongs);
         back = findViewById(R.id.playlistTracksBack);

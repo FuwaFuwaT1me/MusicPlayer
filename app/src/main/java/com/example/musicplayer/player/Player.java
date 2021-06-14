@@ -36,6 +36,7 @@ public class Player {
 
     private int playlistIndex = 0;
     private int playlistToView;
+    private int playlistToAdd;
     private int currentPlaylist = -1;
 
     private int radioIndex = 0;
@@ -62,6 +63,7 @@ public class Player {
 
         for (Radio radio : db.radioDao().getAll()) {
             radioIndexes.add(radio.getId());
+            radioIndex = radio.getId()+1;
         }
 
         if (App.getApp().getDb().playlistDao().ifExist()) {
@@ -75,6 +77,14 @@ public class Player {
         }
 
         appColor = App.getApp().getAppColor();
+    }
+
+    public int getPlaylistToAdd() {
+        return playlistToAdd;
+    }
+
+    public void setPlaylistToAdd(int playlistToAdd) {
+        this.playlistToAdd = playlistToAdd;
     }
 
     public boolean isSeekWhilePause() {

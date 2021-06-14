@@ -1,6 +1,7 @@
 package com.example.musicplayer.activities.liked;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,6 +94,7 @@ public class LikeTrackAdapter extends RecyclerView.Adapter<LikeTrackAdapter.View
                 player.setSource(".");
                 context.startService(App.getApp().getPlayerService());
                 createTrackNotification(R.drawable.ic_pause_red);
+                Log.d("testing", "noticication created");
 
                 player.setIsShuffled(false);
             }

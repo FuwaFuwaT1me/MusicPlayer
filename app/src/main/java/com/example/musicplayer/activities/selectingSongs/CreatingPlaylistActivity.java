@@ -86,6 +86,8 @@ public class CreatingPlaylistActivity extends AppCompatActivity implements Playa
     }
 
     void init() {
+        App.getApp().setLastCondition(0);
+
         create = findViewById(R.id.createPlaylist);
         back = findViewById(R.id.addingBack);
         tracks = findViewById(R.id.addingTracks);

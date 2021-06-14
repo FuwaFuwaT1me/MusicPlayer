@@ -23,6 +23,7 @@ public class App extends Application {
     private AppColor appColor;
     private boolean isMusicPlayerInit;
     private Activity lastActivity;
+    private int lastCondition;
 
     public void setPlayerService(Intent playerService) {
         this.playerService = playerService;
@@ -107,6 +108,14 @@ public class App extends Application {
     }
     //Loading circle
 
+
+    public int getLastCondition() {
+        return lastCondition;
+    }
+
+    public void setLastCondition(int lastCondition) {
+        this.lastCondition = lastCondition;
+    }
 
     public boolean isMusicPlayerInit() {
         return isMusicPlayerInit;

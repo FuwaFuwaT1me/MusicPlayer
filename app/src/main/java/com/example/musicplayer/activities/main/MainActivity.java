@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
             }
 
             if (App.getApp().getPlayerService() == null) App.getApp().setPlayerService(new Intent(this, BackgroundMusicService.class));
-            //onResume();
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
@@ -311,8 +310,10 @@ public class MainActivity extends AppCompatActivity implements Playable {
             for (Track track : db.trackDao().getAll()) {
                 db.trackDao().updatePlaying(track.getId(), false);
             }
+            Log.d("testing", "music list filled");
             fillMusicList();
             App.getApp().setMusicPlayerInit(true);
+            trackAdapter.setData(db.trackDao().getAll());
         }
         else {
             updateTitle();
@@ -518,7 +519,6 @@ public class MainActivity extends AppCompatActivity implements Playable {
 
     void changePlaying() {
         if (!player.isPlaying()) return;
-        Log.d("testing", "aaa");
         if (player.getSource().equals(".")) {
             for (Track track : db.trackDao().getAll()) {
                 db.trackDao().updatePlaying(track.getId(), false);

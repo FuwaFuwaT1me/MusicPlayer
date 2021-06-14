@@ -81,6 +81,8 @@ public class PlaylistActivity extends AppCompatActivity implements Playable {
     }
 
     void init() {
+        App.getApp().setLastActivity(this);
+
         back = findViewById(R.id.playlistBackButton);
         add = findViewById(R.id.addPlaylistButton);
         playlists = findViewById(R.id.playlists);

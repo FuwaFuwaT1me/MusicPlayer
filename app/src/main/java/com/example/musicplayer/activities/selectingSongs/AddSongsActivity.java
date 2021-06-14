@@ -85,6 +85,8 @@ public class AddSongsActivity extends AppCompatActivity implements Playable {
     }
 
     void init() {
+        App.getApp().setLastCondition(1);
+
         add = findViewById(R.id.addSongsToExistingPlaylist);
         back = findViewById(R.id.addingBack);
         tracks = findViewById(R.id.addingTracks);
